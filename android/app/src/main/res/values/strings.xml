@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">truefit-app</string>
+    <string name="title_activity_main">truefit-app</string>
+    <string name="package_name">com.truefit.app</string>
+    <string name="custom_url_scheme">com.truefit.app</string>
+</resources>
