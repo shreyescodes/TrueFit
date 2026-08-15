@@ -32,7 +32,7 @@ import { Capacitor } from '@capacitor/core';
       candy: { color: '#C06C84', gradient: 'linear-gradient(135deg, #FF6B6B, #C06C84, #6C5B7B)' }, 
       ocean: { color: '#2193b0', gradient: 'linear-gradient(135deg, #2193b0, #6dd5ed)' }, 
       sunset: { color: '#FF4E50', gradient: 'linear-gradient(135deg, #FF4E50, #F9D423)' }, 
-      aurora: { color: '#8A2387', gradient: 'linear-gradient(135deg, #8A2387, #E94057, #F27121)' } 
+      emerald: { color: '#11998e', gradient: 'linear-gradient(135deg, #11998e, #38ef7d)' } 
     };
 
     /* ===================== Seed data ===================== */
