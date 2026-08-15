@@ -236,7 +236,7 @@ import { Capacitor } from '@capacitor/core';
       const now = new Date();
       const h = now.getHours();
       const greeting = h < 12 ? 'Good morning' : (h < 17 ? 'Good afternoon' : 'Good evening');
-      document.getElementById('homeGreeting').innerHTML = greeting + ', <span id="userNameDisplay">' + escapeHTML(SETTINGS.userName || 'Guest') + '</span>';
+      document.getElementById('homeGreeting').innerHTML = greeting + ', <span id="userNameDisplay">' + escapeHTML(SETTINGS.userName || 'Trainer') + '</span>';
       document.getElementById('homeDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
       const total = CLIENTS.length;
