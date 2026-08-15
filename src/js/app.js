@@ -785,6 +785,7 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
       SETTINGS.brand = brand;
       document.querySelectorAll('#screen-settings .swatch').forEach(function (b) { b.classList.toggle('selected', b === el); });
       document.querySelector('.screen').style.setProperty('--brand', BRAND_HEX[brand]);
+      document.querySelector('.screen').style.setProperty('--accent', BRAND_HEX[brand]);
       persist();
     }
 
@@ -1004,6 +1005,7 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
       hydrate().then(function () {
         document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
         document.querySelector('.screen').style.setProperty('--brand', BRAND_HEX[SETTINGS.brand]);
+        document.querySelector('.screen').style.setProperty('--accent', BRAND_HEX[SETTINGS.brand]);
         renderHome();
         renderNotes();
         renderStories();
