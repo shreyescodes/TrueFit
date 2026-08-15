@@ -1724,3 +1724,8 @@
       z-index: 1;
       position: relative;
     }
+    
+    .mix-seg.accent-ember, .dot-ic.accent-ember { background: var(--ember) !important; }
+    .mix-seg.accent-pulse, .dot-ic.accent-pulse { background: var(--pulse) !important; }
+    .mix-seg.accent-crimson, .dot-ic.accent-crimson { background: var(--crimson) !important; }
+    .mix-seg.accent-moss, .dot-ic.accent-moss { background: var(--moss) !important; }

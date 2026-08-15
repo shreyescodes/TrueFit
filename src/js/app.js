@@ -32,7 +32,7 @@ import { Capacitor } from '@capacitor/core';
       candy: { color: '#C06C84', gradient: 'linear-gradient(135deg, #FF6B6B, #C06C84, #6C5B7B)' }, 
       ocean: { color: '#2193b0', gradient: 'linear-gradient(135deg, #2193b0, #6dd5ed)' }, 
       sunset: { color: '#FF4E50', gradient: 'linear-gradient(135deg, #FF4E50, #F9D423)' }, 
-      midnight: { color: '#414345', gradient: 'linear-gradient(135deg, #232526, #414345)' } 
+      aurora: { color: '#8A2387', gradient: 'linear-gradient(135deg, #8A2387, #E94057, #F27121)' } 
     };
 
     /* ===================== Seed data ===================== */
@@ -273,7 +273,7 @@ import { Capacitor } from '@capacitor/core';
       const activityEl = document.getElementById('activityList');
       activityEl.innerHTML = sorted.map(function (n) {
         const meta = CAT_META[n.category];
-        return '<div class="activity-row"><span class="activity-dot accent-' + meta.accent + '"></span><div><p>Note logged — ' + escapeHTML(n.clientName) + ' <span class="tag-inline accent-' + meta.accent + '">' + meta.label + '</span></p><span class="activity-time">' + fmtDate(n.date) + '</span></div></div>';
+        return '<div class="activity-row"><span class="activity-dot"></span><div><p>Note logged — ' + escapeHTML(n.clientName) + ' <span class="tag-inline">' + meta.label + '</span></p><span class="activity-time">' + fmtDate(n.date) + '</span></div></div>';
       }).join('') || '<p class="screen-sub">No activity yet.</p>';
 
       updateCategoryCardCounts();
@@ -427,7 +427,7 @@ import { Capacitor } from '@capacitor/core';
       const meta = CAT_META[cat];
       document.getElementById('clientListTitle').textContent = meta.label;
       const header = document.getElementById('clientListHeader');
-      header.className = 'detail-header accent-' + meta.accent;
+      header.className = 'detail-header';
       document.getElementById('clientListAddBtn').dataset.cat = cat;
       const list = CLIENTS.filter(function (c) { return c.category === cat; });
       const body = document.getElementById('clientListBody');
@@ -444,7 +444,7 @@ import { Capacitor } from '@capacitor/core';
           '<div class="client-row-body">' +
           '<div class="client-row-top"><span class="client-row-name">' + escapeHTML(c.name) + '</span><span class="cat-chev"><i class="fa-solid fa-chevron-right"></i></span></div>' +
           '<span class="client-row-tags">' + escapeHTML(tagPreview) + '</span>' +
-          '<div class="mini-progress"><div class="mini-progress-fill accent-' + meta.accent + '" style="width:' + pct + '%"></div></div>' +
+          '<div class="mini-progress"><div class="mini-progress-fill" style="width:' + pct + '%"></div></div>' +
           '<span class="client-row-sessions">' + c.sessionsLog.length + ' / ' + c.sessionsTotal + ' sessions</span>' +
           '</div>' +
           '</button>';
@@ -456,8 +456,7 @@ import { Capacitor } from '@capacitor/core';
       const meta = CAT_META[pendingNewClient.category];
       const screenEl = document.getElementById('screen-new-client-info');
       screenEl.classList.remove('accent-ember', 'accent-pulse', 'accent-crimson', 'accent-moss');
-      screenEl.classList.add('accent-' + meta.accent);
-      document.getElementById('newClientCatBadge').innerHTML = '<span class="badge accent-' + meta.accent + '">' + meta.label + '</span>';
+      document.getElementById('newClientCatBadge').innerHTML = '<span class="badge">' + meta.label + '</span>';
       document.getElementById('newClientTagsPreview').innerHTML = pendingNewClient.tags.map(function (t) { return '<span class="tag">' + escapeHTML(t) + '</span>'; }).join('');
     }
 
@@ -531,10 +530,9 @@ import { Capacitor } from '@capacitor/core';
       const clientNotes = NOTES.filter(function (n) { return n.clientId === id; }).sort(function (a, b) { return (a.date < b.date) ? 1 : -1; });
 
       const html = '' +
-        '<div class="detail-header accent-' + meta.accent + '">' +
-        '<button class="back-btn" onclick="goBack(\'screen-client-list\')"><i class="fa-solid fa-arrow-left"></i></button>' +
-        '<div class="avatar avatar-lg">' + escapeHTML(initials(c.name)) + '</div>' +
-        '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge accent-' + meta.accent + '">' + meta.label + '</span></div>' +
+        '<div class="detail-header">' +
+        '<div class="client-detail-top"><div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
+        '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge">' + meta.label + '</span></div>' +
         '</div>' +
 
         '<div class="tag-row">' + c.tags.map(function (t) { return '<span class="tag">' + escapeHTML(t) + '</span>'; }).join('') + '<button class="edit-icon-btn" onclick="editClientTags()"><i class="fa-solid fa-pen"></i> Edit</button></div>' +
@@ -550,9 +548,9 @@ import { Capacitor } from '@capacitor/core';
 
         '<div class="card">' +
         '<p class="card-title">Sessions</p>' +
-        '<div class="progress-bar"><div class="progress-fill accent-' + meta.accent + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '<p class="screen-sub" style="margin:8px 0 12px;">' + c.sessionsLog.length + ' of ' + c.sessionsTotal + ' attended</p>' +
-        '<button class="btn-primary full accent-' + meta.accent + '" onclick="markSession()"><i class="fa-solid fa-check"></i> Mark Today\u2019s Session</button>' +
+        '<button class="btn-primary full" onclick="markSession()"><i class="fa-solid fa-check"></i> Mark Today\u2019s Session</button>' +
         '</div>' +
 
         '<div class="card">' +
@@ -652,7 +650,7 @@ import { Capacitor } from '@capacitor/core';
         '<div class="assess-row ' + (SELECT_MODE && SELECTED_IDS.has(n.id) ? 'selected-item' : '') + '" onpointerdown="startPress(\'' + n.id + '\', \'note\')" onpointerup="cancelPress()" onpointercancel="cancelPress()" onpointermove="cancelPress()" onclick="handleItemClick(\'' + n.id + '\', \'note\')">' +
         '<div class="avatar">' + escapeHTML(initials(n.clientName)) + '</div>' +
         '<div class="assess-body">' +
-        '<div class="assess-top"><span class="assess-name">' + escapeHTML(n.clientName) + '</span><span class="badge accent-' + meta.accent + '">' + meta.label + '</span></div>' +
+        '<div class="assess-top"><span class="assess-name">' + escapeHTML(n.clientName) + '</span><span class="badge">' + meta.label + '</span></div>' +
         '<p class="assess-note">' + escapeHTML(n.text) + '</p>' +
         (n.image ? '<div class="note-photo"><img src="' + n.image + '" alt=""></div>' : '') +
         '<span class="assess-time">' + fmtDate(n.date) + '</span>' +
@@ -698,7 +696,7 @@ import { Capacitor } from '@capacitor/core';
           '<div class="testimonial-card ' + (SELECT_MODE && SELECTED_IDS.has(s.id) ? 'selected-item' : '') + '" onpointerdown="startPress(\'' + s.id + '\', \'story\')" onpointerup="cancelPress()" onpointercancel="cancelPress()" onpointermove="cancelPress()" onclick="handleItemClick(\'' + s.id + '\', \'story\', \'\')">' +
           '<div class="avatar">' + escapeHTML(initials(s.name)) + '</div>' +
           '<div class="testi-body">' +
-          '<div class="testi-top"><span class="testi-name">' + escapeHTML(s.name) + '</span><span class="badge accent-' + meta.accent + '">' + meta.label + '</span></div>' +
+          '<div class="testi-top"><span class="testi-name">' + escapeHTML(s.name) + '</span><span class="badge">' + meta.label + '</span></div>' +
           '<p class="testi-quote">' + escapeHTML(s.result) + '</p>' +
           (s.image ? '<div class="note-photo"><img src="' + s.image + '" alt=""></div>' : '') +
           '<div class="stars">' + starsHTML(s.stars) + '</div>' +
@@ -715,7 +713,7 @@ import { Capacitor } from '@capacitor/core';
         '<div class="form-field"><label for="storyClientSelect">Client</label><select id="storyClientSelect" onchange="onStoryClientChange()">' + clientOptions + '</select></div>' +
         '<div class="form-field"><label for="storyResult">Result</label><input type="text" id="storyResult" placeholder="e.g., Back to 5K runs pain-free"></div>' +
         '<div class="form-field"><label>Photo</label><div class="image-input"><input type="file" accept="image/*" id="storyImageFile" onchange="handleImagePick(event,\'story\')" style="display:none"><button type="button" class="image-pick-btn" onclick="document.getElementById(\'storyImageFile\').click()"><i class="fa-solid fa-camera"></i> Add Photo</button><div class="image-preview" id="storyImagePreview"></div></div></div>' +
-        '<div class="sheet-actions"><button class="btn-ghost" onclick="closeSheet()">Cancel</button><button class="btn-primary accent-ember" onclick="saveStory()">Save Story</button></div>';
+        '<div class="sheet-actions"><button class="btn-ghost" onclick="closeSheet()">Cancel</button><button class="btn-primary" onclick="saveStory()">Save Story</button></div>';
       document.getElementById('sheetBody').innerHTML = html;
       document.getElementById('sheetOverlay').classList.add('active');
     }
