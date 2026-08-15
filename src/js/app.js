@@ -750,7 +750,7 @@ import { Capacitor } from '@capacitor/core';
       });
       const acctBox = document.getElementById('accountBox');
       if (SETTINGS.signedIn) {
-        acctBox.innerHTML = '<p class="screen-sub">Signed in as <strong>' + escapeHTML(SETTINGS.account) + '</strong></p><button class="btn-primary full accent-ember" onclick="syncNow()"><i class="fa-solid fa-rotate"></i> Sync Now</button><p class="screen-sub" id="lastSyncLine">' + (SETTINGS.lastSync ? ('Last synced: ' + SETTINGS.lastSync) : 'Not synced yet') + '</p><button class="btn-ghost full" onclick="signOut()" style="margin-top:8px;">Sign Out</button>';
+        acctBox.innerHTML = '<p class="screen-sub">Signed in as <strong>' + escapeHTML(SETTINGS.account) + '</strong></p><button class="btn-primary full" onclick="syncNow()"><i class="fa-solid fa-rotate"></i> Sync Now</button><p class="screen-sub" id="lastSyncLine">' + (SETTINGS.lastSync ? ('Last synced: ' + SETTINGS.lastSync) : 'Not synced yet') + '</p>';
       } else {
         acctBox.innerHTML = '<button class="btn-primary full" onclick="goTo(\'screen-signin\', {reset:true})">Sign In to continue</button>';
       }
