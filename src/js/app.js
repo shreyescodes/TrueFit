@@ -1,25 +1,10 @@
 import { Capacitor } from '@capacitor/core';
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-
-/* ===================== State ===================== */
-    // Placeholder Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDPImklFAlLTY1ETkV4YCBRDN9b7VWeHcE",
-      authDomain: "truefit-442a3.firebaseapp.com",
-      projectId: "truefit-442a3",
-      storageBucket: "truefit-442a3.firebasestorage.app",
-      messagingSenderId: "716212569927",
-      appId: "1:716212569927:android:50c85c84a4b0a657fcee62"
-    };
-    if(firebase.apps.length === 0) { firebase.initializeApp(firebaseConfig); }
-    const auth = firebase.auth();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
     let NOTIFICATIONS = [];
     let CLIENTS = [];
     let NOTES = [];
     let STORIES = [];
-    let SETTINGS = { theme: 'light', brand: 'ember', signedIn: false, account: null, lastSync: null };
+    let SETTINGS = { theme: 'light', brand: 'ember', signedIn: false, account: null, userName: null, lastSync: null };
 
     let flowState = { general: [], special: [], sports: [], rehab: [] };
     let flowMode = 'browse'; // 'browse' | 'newClient' | 'editClient'
@@ -250,8 +235,8 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
     function renderHome() {
       const now = new Date();
       const h = now.getHours();
-      const greeting = h < 12 ? 'Good morning, Divya' : (h < 17 ? 'Good afternoon, Divya' : 'Good evening, Divya');
-      document.getElementById('homeGreeting').textContent = greeting;
+      const greeting = h < 12 ? 'Good morning' : (h < 17 ? 'Good afternoon' : 'Good evening');
+      document.getElementById('homeGreeting').innerHTML = greeting + ', <span id="userNameDisplay">' + escapeHTML(SETTINGS.userName || 'Guest') + '</span>';
       document.getElementById('homeDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
       const total = CLIENTS.length;
@@ -762,16 +747,8 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
       if (SETTINGS.signedIn) {
         acctBox.innerHTML = '<p class="screen-sub">Signed in as <strong>' + escapeHTML(SETTINGS.account) + '</strong></p><button class="btn-primary full accent-ember" onclick="syncNow()"><i class="fa-solid fa-rotate"></i> Sync Now</button><p class="screen-sub" id="lastSyncLine">' + (SETTINGS.lastSync ? ('Last synced: ' + SETTINGS.lastSync) : 'Not synced yet') + '</p><button class="btn-ghost full" onclick="signOut()" style="margin-top:8px;">Sign Out</button>';
       } else {
-        acctBox.innerHTML = googleButtonHTML('signInFromSettings()');
+        acctBox.innerHTML = '<button class="btn-primary full" onclick="goTo(\'screen-signin\', {reset:true})">Sign In to continue</button>';
       }
-    }
-
-    function googleButtonHTML(onclick) {
-      return '<button class="google-btn" onclick="' + onclick + '">' + googleGlyph() + '<span>Continue with Google</span></button>';
-    }
-
-    function googleGlyph() {
-      return '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>';
     }
 
     function setTheme(mode, el) {
@@ -800,83 +777,65 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
       toast('Data exported');
     }
 
-    let confirmationResult = null;
-    let verificationId = null;
-
-    async function sendSmsCode() {
-      const phone = document.getElementById('phoneInput').value.trim();
-      if (!phone) { toast('Enter a phone number'); return; }
-
-      toast('Sending SMS...');
-      if (Capacitor.isNativePlatform()) {
-        try {
-          const result = await FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber: phone });
-          verificationId = result.verificationId;
-          document.getElementById('phoneInputSection').style.display = 'none';
-          document.getElementById('otpInputSection').style.display = 'block';
-          toast('SMS Sent');
-        } catch(err) {
-          console.error(err);
-          const errMsg = document.getElementById('errorScreenMsg');
-          if (errMsg) errMsg.textContent = err.message || "Native SMS error.";
-          goTo('screen-error', { reset: true });
-        }
-      } else {
-        try {
-          if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
-          }
-          confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
-          document.getElementById('phoneInputSection').style.display = 'none';
-          document.getElementById('otpInputSection').style.display = 'block';
-          toast('SMS Sent');
-        } catch(err) {
-          console.error(err);
-          const errMsg = document.getElementById('errorScreenMsg');
-          if (errMsg) errMsg.textContent = err.message || "Web SMS error.";
-          goTo('screen-error', { reset: true });
-        }
-      }
+    function getUsers() {
+      try { return JSON.parse(localStorage.getItem('TRUEFIT_USERS')) || {}; } 
+      catch(e) { return {}; }
+    }
+    
+    function saveUsers(users) {
+      localStorage.setItem('TRUEFIT_USERS', JSON.stringify(users));
     }
 
-    async function verifySmsCode() {
-      const code = document.getElementById('otpInput').value.trim();
-      if (!code || code.length < 6) { toast('Enter the 6-digit code'); return; }
-      
-      toast('Verifying...');
-      try {
-        let user;
-        if (Capacitor.isNativePlatform()) {
-          const result = await FirebaseAuthentication.signInWithPhoneNumber({ verificationId, smsCode: code });
-          // Link Capacitor session with Firebase JS SDK
-          const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
-          const userCredential = await auth.signInWithCredential(credential);
-          user = userCredential.user;
-        } else {
-          const userCredential = await confirmationResult.confirm(code);
-          user = userCredential.user;
-        }
-        
-        SETTINGS.signedIn = true;
-        SETTINGS.account = user.phoneNumber;
-        persist();
-        toast('Signed in');
-        goTo('screen-home', { reset: true });
-        renderHome();
-      } catch(err) {
-        console.error(err);
-        const errMsg = document.getElementById('errorScreenMsg');
-        if (errMsg) errMsg.textContent = err.message || "Invalid OTP Code.";
-        goTo('screen-error', { reset: true });
-      }
-    }
-
-    function signInFromSettings() {
+    function signUp() {
+      const phone = document.getElementById('signUpPhone').value.trim();
+      const pwd = document.getElementById('signUpPassword').value;
+      const conf = document.getElementById('signUpConfirm').value;
+      if (!phone) { toast('Enter phone number'); return; }
+      if (!pwd || pwd.length < 4) { toast('Password too short'); return; }
+      if (pwd !== conf) { toast('Passwords do not match'); return; }
+      const users = getUsers();
+      if (users[phone]) { toast('Account already exists'); return; }
+      users[phone] = { password: pwd, name: '' };
+      saveUsers(users);
       SETTINGS.signedIn = true;
-      SETTINGS.account = 'divya.trainer@gmail.com';
+      SETTINGS.account = phone;
+      SETTINGS.userName = '';
       persist();
-      applySettingsToUI();
+      toast('Account created');
+      goTo('screen-profile', {reset:true});
+    }
+
+    function signIn() {
+      const phone = document.getElementById('signInPhone').value.trim();
+      const pwd = document.getElementById('signInPassword').value;
+      if (!phone || !pwd) { toast('Enter phone and password'); return; }
+      const users = getUsers();
+      if (!users[phone] || users[phone].password !== pwd) { toast('Invalid credentials'); return; }
+      SETTINGS.signedIn = true;
+      SETTINGS.account = phone;
+      SETTINGS.userName = users[phone].name || '';
+      persist();
       toast('Signed in');
+      if (!SETTINGS.userName) {
+        goTo('screen-profile', {reset:true});
+      } else {
+        goTo('screen-home', {reset:true});
+        renderHome();
+      }
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('profileName').value.trim();
+      if (!name) { toast('Please enter your name'); return; }
+      const users = getUsers();
+      if (users[SETTINGS.account]) {
+        users[SETTINGS.account].name = name;
+        saveUsers(users);
+      }
+      SETTINGS.userName = name;
+      persist();
+      goTo('screen-home', {reset:true});
+      renderHome();
     }
 
     function syncNow() {
@@ -889,9 +848,11 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
     }
 
     function signOut() {
-      firebase.auth().signOut().then(function() {
-        goTo('screen-signin', { reset: true });
-      });
+      SETTINGS.signedIn = false;
+      SETTINGS.account = null;
+      SETTINGS.userName = null;
+      persist();
+      goTo('screen-signin', { reset: true });
     }
 
     /* ===================== Multi-Select & Long Press ===================== */
@@ -1021,8 +982,9 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
 /* ===================== Window Exports ===================== */
 window.toggleAccordion = toggleAccordion;
-window.sendSmsCode = sendSmsCode;
-window.verifySmsCode = verifySmsCode;
+window.signUp = signUp;
+window.signIn = signIn;
+window.saveProfile = saveProfile;
 window.setClientsHeaderMode = setClientsHeaderMode;
 window.pendingNewClient = pendingNewClient;
 window.pendingNoteImage = pendingNoteImage;

@@ -52,23 +52,46 @@
             <div class="signin-mark"><i class="fa-solid fa-fire"></i></div>
             <h2 class="signin-word">True Fit</h2>
             <p class="signin-sub">Sign in to manage your clients, sessions, and progress notes in one place.</p>
-            <div id="phoneInputSection">
-              <input type="tel" id="phoneInput" placeholder="+1 234 567 8900" style="width:100%; padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid var(--surface-3); background:var(--surface-2); color:var(--text-1);" />
-              <button class="btn-primary full" id="sendSmsBtn" onclick="sendSmsCode()">Send SMS Code</button>
+            <div id="signInSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="tel" id="signInPhone" placeholder="Phone Number" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <input type="password" id="signInPassword" placeholder="Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" onclick="signIn()">Sign In</button>
             </div>
-            <div id="otpInputSection" style="display:none; margin-top:16px;">
-              <input type="number" id="otpInput" placeholder="123456" style="width:100%; padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid var(--surface-3); background:var(--surface-2); color:var(--text-1); letter-spacing: 4px; text-align: center; font-size: 1.2rem;" />
-              <button class="btn-primary full" id="verifyOtpBtn" onclick="verifySmsCode()">Verify & Login</button>
+            <p class="signin-skip" onclick="goTo('screen-signup', {reset:true})">Don't have an account? <strong>Sign Up</strong></p>
+            <p class="signin-skip" style="margin-top:8px;" onclick="goTo('screen-home',{reset:true})">Skip for now</p>
+          </section>
+
+          <!-- SIGN UP -->
+          <section class="app-screen" id="screen-signup">
+            <div class="signin-mark"><i class="fa-solid fa-user-plus"></i></div>
+            <h2 class="signin-word">Create Account</h2>
+            <p class="signin-sub">Join True Fit to build your personalized training ecosystem.</p>
+            <div id="signUpSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="tel" id="signUpPhone" placeholder="Phone Number" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <input type="password" id="signUpPassword" placeholder="Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <input type="password" id="signUpConfirm" placeholder="Confirm Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" onclick="signUp()">Sign Up</button>
             </div>
-            <div id="recaptcha-container" style="margin-top:16px; display:flex; justify-content:center;"></div>
-            <p class="signin-skip" onclick="goTo('screen-home',{reset:true})">Skip for now</p>
+            <p class="signin-skip" onclick="goTo('screen-signin', {reset:true})">Already have an account? <strong>Sign In</strong></p>
+            <p class="signin-skip" style="margin-top:8px;" onclick="goTo('screen-home',{reset:true})">Skip for now</p>
+          </section>
+
+          <!-- PROFILE SETUP -->
+          <section class="app-screen" id="screen-profile">
+            <div class="signin-mark" style="color:var(--accent);"><i class="fa-solid fa-id-card"></i></div>
+            <h2 class="signin-word">Welcome Aboard</h2>
+            <p class="signin-sub">Let's start by getting to know you. What is your name?</p>
+            <div id="profileSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="text" id="profileName" placeholder="Your Name" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" onclick="saveProfile()">Continue</button>
+            </div>
           </section>
 
           <!-- HOME -->
           <section class="app-screen" id="screen-home">
             <div class="home-top">
               <div>
-                <p class="eyebrow-sm" id="homeGreeting">Good evening, Divya</p>
+                <p class="eyebrow-sm" id="homeGreeting">Good evening, <span id="userNameDisplay">Guest</span></p>
                 <p class="home-date" id="homeDate">Sunday, 9 August</p>
               </div>
               <div class="header-icons">
@@ -633,8 +656,6 @@
 
         <div class="toast" id="toast"></div>
       </div>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script type="module" src="./src/js/app.js"></script>
 </body>
 
