@@ -144,28 +144,28 @@
             </div>
             <p class="screen-sub" id="clientsScreenSub">Choose a category to see that group's clients.</p>
             <div class="cat-list">
-              <button class="category-card accent-ember" data-cat="general" onclick="handleCategoryCardTap('general')">
+              <button class="category-card" data-cat="general" onclick="handleCategoryCardTap('general')">
                 <span class="cat-icon"><i class="fa-solid fa-fire"></i></span>
                 <span class="cat-text"><span class="cat-title">General Fitness</span><span class="cat-blurb">Weight
                     goals, endurance, posture</span></span>
                 <span class="cat-count">3 active</span>
                 <i class="fa-solid fa-chevron-right cat-chev"></i>
               </button>
-              <button class="category-card accent-pulse" data-cat="special" onclick="handleCategoryCardTap('special')">
+              <button class="category-card" data-cat="special" onclick="handleCategoryCardTap('special')">
                 <span class="cat-icon"><i class="fa-solid fa-heart-pulse"></i></span>
                 <span class="cat-text"><span class="cat-title">Special Population</span><span class="cat-blurb">Medical
                     conditions, safe programming</span></span>
                 <span class="cat-count">3 active</span>
                 <i class="fa-solid fa-chevron-right cat-chev"></i>
               </button>
-              <button class="category-card accent-crimson" data-cat="sports" onclick="handleCategoryCardTap('sports')">
+              <button class="category-card" data-cat="sports" onclick="handleCategoryCardTap('sports')">
                 <span class="cat-icon"><i class="fa-solid fa-medal"></i></span>
                 <span class="cat-text"><span class="cat-title">Sports / Athlete</span><span
                     class="cat-blurb">Performance training by sport type</span></span>
                 <span class="cat-count">3 active</span>
                 <i class="fa-solid fa-chevron-right cat-chev"></i>
               </button>
-              <button class="category-card accent-moss" data-cat="rehab" onclick="handleCategoryCardTap('rehab')">
+              <button class="category-card" data-cat="rehab" onclick="handleCategoryCardTap('rehab')">
                 <span class="cat-icon"><i class="fa-solid fa-kit-medical"></i></span>
                 <span class="cat-text"><span class="cat-title">Rehabilitation</span><span class="cat-blurb">Post-injury
                     and recovery care</span></span>
@@ -189,7 +189,7 @@
           </section>
 
           <!-- GENERAL FITNESS DETAIL -->
-          <section class="app-screen accent-ember" id="screen-general">
+          <section class="app-screen" id="screen-general">
             <div class="detail-header">
               <button class="back-btn" onclick="goBack('screen-clients')"><i
                   class="fa-solid fa-arrow-left"></i></button>
@@ -247,14 +247,14 @@
             </div>
 
             <div class="cta-bar">
-              <button class="btn-primary full accent-ember" id="cta-general" disabled
+              <button class="btn-primary full" id="cta-general" disabled
                 onclick="handleTaxonomyCTA('general')"><span class="cta-label">Select at least one focus
                   area</span></button>
             </div>
           </section>
 
           <!-- SPECIAL POPULATION DETAIL -->
-          <section class="app-screen accent-pulse" id="screen-special">
+          <section class="app-screen" id="screen-special">
             <div class="detail-header">
               <button class="back-btn" onclick="goBack('screen-clients')"><i
                   class="fa-solid fa-arrow-left"></i></button>
@@ -331,14 +331,14 @@
             </div>
 
             <div class="cta-bar">
-              <button class="btn-primary full accent-pulse" id="cta-special" disabled
+              <button class="btn-primary full" id="cta-special" disabled
                 onclick="handleTaxonomyCTA('special')"><span class="cta-label">Select at least one
                   condition</span></button>
             </div>
           </section>
 
           <!-- SPORTS DETAIL -->
-          <section class="app-screen accent-crimson" id="screen-sports">
+          <section class="app-screen" id="screen-sports">
             <div class="detail-header">
               <button class="back-btn" onclick="goBack('screen-clients')"><i
                   class="fa-solid fa-arrow-left"></i></button>
@@ -374,13 +374,13 @@
             </div>
 
             <div class="cta-bar">
-              <button class="btn-primary full accent-crimson" id="cta-sports" disabled
+              <button class="btn-primary full" id="cta-sports" disabled
                 onclick="handleTaxonomyCTA('sports')"><span class="cta-label">Select an athlete type</span></button>
             </div>
           </section>
 
           <!-- REHAB DETAIL -->
-          <section class="app-screen accent-moss" id="screen-rehab">
+          <section class="app-screen" id="screen-rehab">
             <div class="detail-header">
               <button class="back-btn" onclick="goBack('screen-clients')"><i
                   class="fa-solid fa-arrow-left"></i></button>
@@ -490,7 +490,7 @@
             </div>
 
             <div class="cta-bar">
-              <button class="btn-primary full accent-moss" id="cta-rehab" disabled
+              <button class="btn-primary full" id="cta-rehab" disabled
                 onclick="handleTaxonomyCTA('rehab')"><span class="cta-label">Select at least one item</span></button>
             </div>
           </section>
@@ -498,7 +498,7 @@
 
 
           <!-- NEW CLIENT INFO -->
-          <section class="app-screen accent-ember" id="screen-new-client-info">
+          <section class="app-screen" id="screen-new-client-info">
             <div class="detail-header">
               <button class="back-btn" onclick="goBack('screen-clients')"><i
                   class="fa-solid fa-arrow-left"></i></button>
@@ -520,7 +520,7 @@
             <div class="form-field"><label for="nciSessions">Total Sessions Purchased</label><input type="number"
                 id="nciSessions" placeholder="e.g., 12"></div>
 
-            <button class="btn-primary full accent-ember" onclick="saveNewClient()"><i class="fa-solid fa-check"></i>
+            <button class="btn-primary full" onclick="saveNewClient()"><i class="fa-solid fa-check"></i>
               Save Client</button>
           </section>
 
@@ -558,7 +558,7 @@
                 <div class="image-preview" id="noteImagePreview"></div>
               </div>
             </div>
-            <button class="btn-primary full accent-ember" onclick="saveNote()"><i class="fa-solid fa-check"></i> Save
+            <button class="btn-primary full" onclick="saveNote()"><i class="fa-solid fa-check"></i> Save
               Note</button>
 
             <p class="section-label">Recent Notes</p>
@@ -599,18 +599,14 @@
             <div class="settings-block">
               <p class="section-label" style="margin-top:0;">App Accent</p>
               <div class="theme-swatches">
-                <button class="swatch selected" data-brand="ember" style="background:#F0653A;"
-                  onclick="setBrand('ember', this)" aria-label="Ember"><i class="fa-solid fa-check"></i></button>
-                <button class="swatch" data-brand="pulse" style="background:#2FA89F;" onclick="setBrand('pulse', this)"
-                  aria-label="Teal"><i class="fa-solid fa-check"></i></button>
-                <button class="swatch" data-brand="crimson" style="background:#E2445E;"
-                  onclick="setBrand('crimson', this)" aria-label="Crimson"><i class="fa-solid fa-check"></i></button>
-                <button class="swatch" data-brand="moss" style="background:var(--moss)"
-                  onclick="setBrand('moss', this)" aria-label="Moss"><i class="fa-solid fa-check"></i></button>
-                <button class="swatch" data-brand="neon" style="background:#00F0FF"
-                  onclick="setBrand('neon', this)" aria-label="Neon"><i class="fa-solid fa-check"></i></button>
-                <button class="swatch" data-brand="royal" style="background:#7B2CBF"
-                  onclick="setBrand('royal', this)" aria-label="Royal"><i class="fa-solid fa-check"></i></button>
+                <button class="swatch selected" data-brand="candy" style="background:linear-gradient(135deg, #FF6B6B, #C06C84, #6C5B7B);"
+                  onclick="setBrand('candy', this)" aria-label="Candy"><i class="fa-solid fa-check"></i></button>
+                <button class="swatch" data-brand="ocean" style="background:linear-gradient(135deg, #2193b0, #6dd5ed);"
+                  onclick="setBrand('ocean', this)" aria-label="Ocean"><i class="fa-solid fa-check"></i></button>
+                <button class="swatch" data-brand="sunset" style="background:linear-gradient(135deg, #FF4E50, #F9D423);"
+                  onclick="setBrand('sunset', this)" aria-label="Sunset"><i class="fa-solid fa-check"></i></button>
+                <button class="swatch" data-brand="midnight" style="background:linear-gradient(135deg, #232526, #414345);"
+                  onclick="setBrand('midnight', this)" aria-label="Midnight"><i class="fa-solid fa-check"></i></button>
               </div>
             </div>
 

@@ -28,7 +28,12 @@ import { Capacitor } from '@capacitor/core';
     };
     const TAB_SCREEN = { home: 'screen-home', clients: 'screen-clients', stories: 'screen-stories', notes: 'screen-notes' };
     const SCREEN_TAB = { 'screen-home': 'home', 'screen-clients': 'clients', 'screen-stories': 'stories', 'screen-notes': 'notes' };
-    const BRAND_HEX = { ember: '#F0653A', pulse: '#2FA89F', crimson: '#E2445E', moss: '#3FA669', neon: '#00F0FF', royal: '#7B2CBF' };
+    const BRAND_HEX = { 
+      candy: { color: '#C06C84', gradient: 'linear-gradient(135deg, #FF6B6B, #C06C84, #6C5B7B)' }, 
+      ocean: { color: '#2193b0', gradient: 'linear-gradient(135deg, #2193b0, #6dd5ed)' }, 
+      sunset: { color: '#FF4E50', gradient: 'linear-gradient(135deg, #FF4E50, #F9D423)' }, 
+      midnight: { color: '#414345', gradient: 'linear-gradient(135deg, #232526, #414345)' } 
+    };
 
     /* ===================== Seed data ===================== */
     function seedDates(n) {
@@ -760,9 +765,11 @@ import { Capacitor } from '@capacitor/core';
 
     function setBrand(brand, el) {
       SETTINGS.brand = brand;
+      const theme = BRAND_HEX[brand] || BRAND_HEX.candy;
       document.querySelectorAll('#screen-settings .swatch').forEach(function (b) { b.classList.toggle('selected', b === el); });
-      document.querySelector('.screen').style.setProperty('--brand', BRAND_HEX[brand]);
-      document.querySelector('.screen').style.setProperty('--accent', BRAND_HEX[brand]);
+      document.querySelector('.screen').style.setProperty('--brand', theme.color);
+      document.querySelector('.screen').style.setProperty('--accent', theme.color);
+      document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
       persist();
     }
 
@@ -964,9 +971,12 @@ import { Capacitor } from '@capacitor/core';
 
     document.addEventListener('DOMContentLoaded', function () {
       hydrate().then(function () {
+        if (!BRAND_HEX[SETTINGS.brand]) SETTINGS.brand = 'candy';
+        const theme = BRAND_HEX[SETTINGS.brand];
         document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
-        document.querySelector('.screen').style.setProperty('--brand', BRAND_HEX[SETTINGS.brand]);
-        document.querySelector('.screen').style.setProperty('--accent', BRAND_HEX[SETTINGS.brand]);
+        document.querySelector('.screen').style.setProperty('--brand', theme.color);
+        document.querySelector('.screen').style.setProperty('--accent', theme.color);
+        document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
         renderHome();
         renderNotes();
         renderStories();

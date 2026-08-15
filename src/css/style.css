@@ -325,7 +325,7 @@
     }
 
     .calib[data-step="1"] .t1 {
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
     }
 
     .calib[data-step="1"] .cl1 {
@@ -334,7 +334,7 @@
 
     .calib[data-step="2"] .t1,
     .calib[data-step="2"] .t2 {
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
     }
 
     .calib[data-step="2"] .cl1,
@@ -345,7 +345,7 @@
     .calib[data-step="3"] .t1,
     .calib[data-step="3"] .t2,
     .calib[data-step="3"] .t3 {
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
     }
 
     .calib[data-step="3"] .cl1,
@@ -482,7 +482,7 @@
 
     .mix-seg {
       height: 100%;
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
     }
 
     .mix-legend {
@@ -503,35 +503,24 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
       display: inline-block;
     }
 
     .btn-primary {
-      background: var(--ember);
-      color: #15100C;
+      background: var(--accent-gradient, var(--brand, var(--ember)));
+      color: #fff;
       font-weight: 700;
       font-size: 14px;
       padding: 15px 18px;
-      border-radius: var(--r-md);
-      display: flex;
+      border-radius: var(--r-pill);
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: opacity .15s, transform .15s;
-    }
-
-    .btn-primary.accent-pulse {
-      background: var(--pulse);
-    }
-
-    .btn-primary.accent-crimson {
-      background: var(--crimson);
-      color: #fff;
-    }
-
-    .btn-primary.accent-moss {
-      background: var(--moss);
     }
 
     .btn-primary.full {
@@ -588,7 +577,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
       margin-top: 6px;
       flex-shrink: 0;
     }
@@ -666,7 +655,7 @@
       width: 46px;
       height: 46px;
       border-radius: var(--r-md);
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
       color: #12161C;
       display: flex;
       align-items: center;
@@ -1009,7 +998,7 @@
       letter-spacing: 0.03em;
       padding: 4px 9px;
       border-radius: var(--r-pill);
-      background: var(--accent);
+      background: var(--accent-gradient, var(--accent));
       color: #12161C;
       white-space: nowrap;
     }
@@ -1331,7 +1320,7 @@
     }
 
     .icon-btn .dot {
-      background: var(--brand);
+      background: var(--accent-gradient, var(--brand));
     }
 
     /* Header icons */
@@ -1341,10 +1330,7 @@
       flex-shrink: 0;
     }
 
-    /* Generic app-screen CTA / primary that should follow the chosen brand accent */
-    .app-screen>.btn-primary.full:not([class*="accent-"]) {
-      background: var(--brand);
-    }
+
 
     .tab-btn.active {
       color: var(--brand);
@@ -1357,7 +1343,7 @@
     }
 
     .splash-calib .tick {
-      background: var(--brand);
+      background: var(--accent-gradient, var(--brand));
     }
 
     /* ---------- Sign-in ---------- */
@@ -1723,4 +1709,18 @@
       background: var(--neon-soft) !important;
       transform: scale(0.98);
       transition: all 0.2s ease;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .screens {
+      z-index: 1;
+      position: relative;
     }
