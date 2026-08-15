@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "716212569927",
+    "project_id": "truefit-442a3",
+    "storage_bucket": "truefit-442a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:716212569927:android:50c85c84a4b0a657fcee62",
+        "android_client_info": {
+          "package_name": "com.truefit.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPImklFAlLTY1ETkV4YCBRDN9b7VWeHcE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

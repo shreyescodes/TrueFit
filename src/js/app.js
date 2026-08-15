@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+
 /* ===================== State ===================== */
     // Placeholder Firebase Config
     const firebaseConfig = {
@@ -791,20 +794,75 @@
       toast('Data exported');
     }
 
-    function mockSignIn(nextScreen) {
-      auth.signInWithPopup(googleProvider).then(function(result) {
+    let confirmationResult = null;
+    let verificationId = null;
+
+    async function sendSmsCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!phone) { toast('Enter a phone number'); return; }
+
+      toast('Sending SMS...');
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const result = await FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber: phone });
+          verificationId = result.verificationId;
+          document.getElementById('phoneInputSection').style.display = 'none';
+          document.getElementById('otpInputSection').style.display = 'block';
+          toast('SMS Sent');
+        } catch(err) {
+          console.error(err);
+          const errMsg = document.getElementById('errorScreenMsg');
+          if (errMsg) errMsg.textContent = err.message || "Native SMS error.";
+          goTo('screen-error', { reset: true });
+        }
+      } else {
+        try {
+          if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+          }
+          confirmationResult = await auth.signInWithPhoneNumber(phone, window.recaptchaVerifier);
+          document.getElementById('phoneInputSection').style.display = 'none';
+          document.getElementById('otpInputSection').style.display = 'block';
+          toast('SMS Sent');
+        } catch(err) {
+          console.error(err);
+          const errMsg = document.getElementById('errorScreenMsg');
+          if (errMsg) errMsg.textContent = err.message || "Web SMS error.";
+          goTo('screen-error', { reset: true });
+        }
+      }
+    }
+
+    async function verifySmsCode() {
+      const code = document.getElementById('otpInput').value.trim();
+      if (!code || code.length < 6) { toast('Enter the 6-digit code'); return; }
+      
+      toast('Verifying...');
+      try {
+        let user;
+        if (Capacitor.isNativePlatform()) {
+          const result = await FirebaseAuthentication.signInWithPhoneNumber({ verificationId, smsCode: code });
+          // Link Capacitor session with Firebase JS SDK
+          const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+          const userCredential = await auth.signInWithCredential(credential);
+          user = userCredential.user;
+        } else {
+          const userCredential = await confirmationResult.confirm(code);
+          user = userCredential.user;
+        }
+        
         SETTINGS.signedIn = true;
-        SETTINGS.account = result.user.email;
+        SETTINGS.account = user.phoneNumber;
         persist();
-        toast('Signed in as ' + result.user.displayName);
-        goTo(nextScreen, { reset: true });
+        toast('Signed in');
+        goTo('screen-home', { reset: true });
         renderHome();
-      }).catch(function(err) {
+      } catch(err) {
         console.error(err);
         const errMsg = document.getElementById('errorScreenMsg');
-        if (errMsg) errMsg.textContent = err.message || "There was a problem authenticating with Google.";
+        if (errMsg) errMsg.textContent = err.message || "Invalid OTP Code.";
         goTo('screen-error', { reset: true });
-      });
+      }
     }
 
     function signInFromSettings() {
@@ -893,7 +951,8 @@
 
 /* ===================== Window Exports ===================== */
 window.toggleAccordion = toggleAccordion;
-window.mockSignIn = mockSignIn;
+window.sendSmsCode = sendSmsCode;
+window.verifySmsCode = verifySmsCode;
 window.setClientsHeaderMode = setClientsHeaderMode;
 window.pendingNewClient = pendingNewClient;
 window.pendingNoteImage = pendingNoteImage;
