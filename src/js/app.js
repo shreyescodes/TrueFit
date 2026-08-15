@@ -4,9 +4,12 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 /* ===================== State ===================== */
     // Placeholder Firebase Config
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
+      apiKey: "AIzaSyDPImklFAlLTY1ETkV4YCBRDN9b7VWeHcE",
+      authDomain: "truefit-442a3.firebaseapp.com",
+      projectId: "truefit-442a3",
+      storageBucket: "truefit-442a3.firebasestorage.app",
+      messagingSenderId: "716212569927",
+      appId: "1:716212569927:android:50c85c84a4b0a657fcee62"
     };
     if(firebase.apps.length === 0) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
@@ -29,7 +32,9 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
     let pendingNoteImage = null;
     let navStack = [];
     let memoryStore = {}; // fallback when window.storage is unavailable
-
+    let SELECT_MODE = false;
+    let SELECT_TYPE = null;
+    let SELECTED_IDS = new Set();
     const CAT_META = {
       general: { label: 'General Fitness', accent: 'ember', icon: 'fa-fire', ctaEmpty: 'Select at least one focus area' },
       special: { label: 'Special Population', accent: 'pulse', icon: 'fa-heart-pulse', ctaEmpty: 'Select at least one condition' },
@@ -921,21 +926,10 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
       document.getElementById('sheetOverlay').classList.add('active');
     }
 
-    /* ===================== Clock / init ===================== */
-    function updateClock() {
-      const now = new Date();
-      let h = now.getHours();
-      const m = now.getMinutes();
-      h = h % 12; if (h === 0) h = 12;
-      document.getElementById('clockTime').textContent = h + ':' + (m < 10 ? '0' : '') + m;
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
       hydrate().then(function () {
         document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
         document.querySelector('.screen').style.setProperty('--brand', BRAND_HEX[SETTINGS.brand]);
-        updateClock();
-        setInterval(updateClock, 30000);
         renderHome();
         renderNotes();
         renderStories();
@@ -991,7 +985,6 @@ window.seedStories = seedStories;
 window.signOut = signOut;
 window.fmtDate = fmtDate;
 window.renderClientDetail = renderClientDetail;
-window.updateClock = updateClock;
 window.openSheet = openSheet;
 window.refreshCTA = refreshCTA;
 window.filterConditions = filterConditions;
