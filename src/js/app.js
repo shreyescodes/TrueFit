@@ -449,7 +449,7 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
         const pct = c.sessionsTotal ? Math.round((c.sessionsLog.length / c.sessionsTotal) * 100) : 0;
         const tagPreview = c.tags.slice(0, 2).join(', ');
         return '' +
-          '<button class="client-row" onclick="openClientDetail(\'' + c.id + '\')">' +
+          '<button class="client-row ' + (SELECT_MODE && SELECTED_IDS.has(c.id) ? 'selected-item' : '') + '" onpointerdown="startPress(\'' + c.id + '\', \'client\')" onpointerup="cancelPress()" onpointercancel="cancelPress()" onpointermove="cancelPress()" onclick="handleItemClick(\'' + c.id + '\', \'client\')">' +
           '<div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
           '<div class="client-row-body">' +
           '<div class="client-row-top"><span class="client-row-name">' + escapeHTML(c.name) + '</span><span class="cat-chev"><i class="fa-solid fa-chevron-right"></i></span></div>' +
@@ -659,7 +659,7 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
     function renderNoteCard(n) {
       const meta = CAT_META[n.category];
       return '' +
-        '<div class="assess-row">' +
+        '<div class="assess-row ' + (SELECT_MODE && SELECTED_IDS.has(n.id) ? 'selected-item' : '') + '" onpointerdown="startPress(\'' + n.id + '\', \'note\')" onpointerup="cancelPress()" onpointercancel="cancelPress()" onpointermove="cancelPress()" onclick="handleItemClick(\'' + n.id + '\', \'note\')">' +
         '<div class="avatar">' + escapeHTML(initials(n.clientName)) + '</div>' +
         '<div class="assess-body">' +
         '<div class="assess-top"><span class="assess-name">' + escapeHTML(n.clientName) + '</span><span class="badge accent-' + meta.accent + '">' + meta.label + '</span></div>' +
@@ -888,11 +888,85 @@ import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
     }
 
     function signOut() {
-      SETTINGS.signedIn = false;
-      SETTINGS.account = null;
-      persist();
-      applySettingsToUI();
-      goTo('screen-signin', { reset: true });
+      firebase.auth().signOut().then(function() {
+        goTo('screen-signin', { reset: true });
+      });
+    }
+
+    /* ===================== Multi-Select & Long Press ===================== */
+    let pressTimer = null;
+    function startPress(id, type) {
+      if (SELECT_MODE && SELECT_TYPE === type) return;
+      pressTimer = setTimeout(function() {
+        SELECT_MODE = true;
+        SELECT_TYPE = type;
+        SELECTED_IDS.clear();
+        SELECTED_IDS.add(id);
+        if ('vibrate' in navigator) navigator.vibrate(50);
+        updateSelectBar();
+        reRenderList(type);
+      }, 500);
+    }
+    function cancelPress() {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+    function handleItemClick(id, type) {
+      if (SELECT_MODE) {
+        if (SELECT_TYPE !== type) return;
+        if (SELECTED_IDS.has(id)) {
+          SELECTED_IDS.delete(id);
+          if (SELECTED_IDS.size === 0) exitSelectMode();
+          else updateSelectBar();
+        } else {
+          SELECTED_IDS.add(id);
+          updateSelectBar();
+        }
+        reRenderList(type);
+        return;
+      }
+      if (type === 'client') openClientDetail(id);
+    }
+    function updateSelectBar() {
+      let bar = document.getElementById('multiSelectBar');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'multiSelectBar';
+        bar.className = 'multi-select-bar';
+        document.body.appendChild(bar);
+      }
+      if (SELECT_MODE) {
+        bar.innerHTML = '<button class="icon-btn" onclick="exitSelectMode()"><i class="fa-solid fa-xmark"></i></button>' +
+                        '<span style="font-weight:600;font-size:17px;color:var(--text);">' + SELECTED_IDS.size + ' Selected</span>' +
+                        '<button class="icon-btn" onclick="deleteSelected()" style="color:var(--crimson);"><i class="fa-solid fa-trash"></i></button>';
+        bar.classList.add('active');
+      } else {
+        bar.classList.remove('active');
+      }
+    }
+    function exitSelectMode() {
+      SELECT_MODE = false;
+      const type = SELECT_TYPE;
+      SELECT_TYPE = null;
+      SELECTED_IDS.clear();
+      updateSelectBar();
+      if (type) reRenderList(type);
+    }
+    function deleteSelected() {
+      if (confirm('Delete ' + SELECTED_IDS.size + ' item(s)?')) {
+        if (SELECT_TYPE === 'client') CLIENTS = CLIENTS.filter(function(x) { return !SELECTED_IDS.has(x.id); });
+        else if (SELECT_TYPE === 'story') STORIES = STORIES.filter(function(x) { return !SELECTED_IDS.has(x.id); });
+        else if (SELECT_TYPE === 'note') NOTES = NOTES.filter(function(x) { return !SELECTED_IDS.has(x.id); });
+        persist();
+        exitSelectMode();
+        toast('Deleted successfully');
+      }
+    }
+    function reRenderList(type) {
+      if (type === 'client') {
+        const cat = document.getElementById('clientListAddBtn') ? document.getElementById('clientListAddBtn').dataset.cat : null;
+        if (cat) renderClientList(cat);
+      } else if (type === 'story') renderStories();
+      else if (type === 'note') renderNotes();
     }
 
     /* ===================== Toast ===================== */
@@ -988,6 +1062,11 @@ window.renderClientDetail = renderClientDetail;
 window.openSheet = openSheet;
 window.refreshCTA = refreshCTA;
 window.filterConditions = filterConditions;
+window.startPress = startPress;
+window.cancelPress = cancelPress;
+window.handleItemClick = handleItemClick;
+window.exitSelectMode = exitSelectMode;
+window.deleteSelected = deleteSelected;
 window.SCREEN_TAB = SCREEN_TAB;
 window.starsHTML = starsHTML;
 window.NOTES = NOTES;
