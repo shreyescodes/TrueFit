@@ -534,9 +534,10 @@ import { Capacitor } from '@capacitor/core';
         '<div class="client-detail-top"><div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
         '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge">' + meta.label + '</span></div>' +
         '</div>' +
+        '</div>' +
         '<div class="profile-action-row" style="display:flex; gap:12px; margin-bottom: 24px;">' +
-        '<button class="btn-ghost" style="flex:1;" onclick="openEditSheet(\'profile\')"><i class="fa-solid fa-pen"></i> Edit Profile</button>' +
-        '<button class="btn-ghost" style="flex:1;" onclick="exportClientPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>' +
+        '<button class="btn-ghost" style="flex:1; padding: 12px 10px; font-size: 13px;" onclick="openEditSheet(\'profile\')"><i class="fa-solid fa-pen"></i> Edit Profile</button>' +
+        '<button class="btn-ghost" style="flex:1; padding: 12px 10px; font-size: 13px;" onclick="exportClientPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>' +
         '</div>' +
 
         '<div class="tag-row">' + c.tags.map(function (t) { return '<span class="tag">' + escapeHTML(t) + '</span>'; }).join('') + '<button class="edit-icon-btn" onclick="editClientTags()"><i class="fa-solid fa-pen"></i> Edit</button></div>' +
