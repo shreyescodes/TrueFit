@@ -222,11 +222,14 @@
     }
 
     .app-logo {
-      width: 100px;
-      height: 100px;
-      object-fit: contain;
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid var(--panel);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      background: #fff;
       margin-bottom: 16px;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
     }
 
     .splash-word {
