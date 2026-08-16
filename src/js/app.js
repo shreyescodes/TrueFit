@@ -534,6 +534,10 @@ import { Capacitor } from '@capacitor/core';
         '<div class="client-detail-top"><div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
         '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge">' + meta.label + '</span></div>' +
         '</div>' +
+        '<div class="profile-action-row" style="display:flex; gap:12px; margin-bottom: 24px;">' +
+        '<button class="btn-ghost" style="flex:1;" onclick="openEditSheet(\'profile\')"><i class="fa-solid fa-pen"></i> Edit Profile</button>' +
+        '<button class="btn-ghost" style="flex:1;" onclick="exportClientPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>' +
+        '</div>' +
 
         '<div class="tag-row">' + c.tags.map(function (t) { return '<span class="tag">' + escapeHTML(t) + '</span>'; }).join('') + '<button class="edit-icon-btn" onclick="editClientTags()"><i class="fa-solid fa-pen"></i> Edit</button></div>' +
 
@@ -585,7 +589,14 @@ import { Capacitor } from '@capacitor/core';
       currentSheetClientId = currentClientId;
       const c = CLIENTS.find(function (x) { return x.id === currentClientId; });
       let html = '';
-      if (kind === 'nutrition') {
+      if (kind === 'profile') {
+        html = '<h3>Edit Profile</h3>' +
+               '<div class="form-field"><label for="sheetName">Name</label><input type="text" id="sheetName" value="' + escapeHTML(c.name) + '"></div>' +
+               '<div class="form-field"><label for="sheetCategory">Category</label><select id="sheetCategory">' +
+                 Object.keys(CAT_META).map(k => '<option value="'+k+'" '+(k===c.category?'selected':'')+'>'+CAT_META[k].label+'</option>').join('') +
+               '</select></div>' +
+               '<div class="form-field"><label for="sheetTotalSessions">Total Sessions</label><input type="number" id="sheetTotalSessions" value="' + c.sessionsTotal + '"></div>';
+      } else if (kind === 'nutrition') {
         html = '<h3>Edit Nutrition</h3><div class="form-field"><label for="sheetTextarea">Notes</label><textarea id="sheetTextarea" rows="4" placeholder="Current nutrition guidance">' + escapeHTML(c.nutrition.current || '') + '</textarea></div>';
       } else if (kind === 'workout') {
         html = '<h3>Edit Workout</h3><div class="form-field"><label for="sheetTextarea">Notes</label><textarea id="sheetTextarea" rows="4" placeholder="Current workout guidance">' + escapeHTML(c.workout.current || '') + '</textarea></div>';
@@ -600,7 +611,14 @@ import { Capacitor } from '@capacitor/core';
     function saveEditSheet() {
       const c = CLIENTS.find(function (x) { return x.id === currentSheetClientId; });
       const today = new Date().toISOString().slice(0, 10);
-      if (currentSheetMode === 'nutrition' || currentSheetMode === 'workout') {
+      if (currentSheetMode === 'profile') {
+        const newName = document.getElementById('sheetName').value.trim();
+        const newCat = document.getElementById('sheetCategory').value;
+        const newTotal = parseInt(document.getElementById('sheetTotalSessions').value, 10);
+        if(newName) c.name = newName;
+        if(newCat) c.category = newCat;
+        if(!isNaN(newTotal) && newTotal >= 0) c.sessionsTotal = newTotal;
+      } else if (currentSheetMode === 'nutrition' || currentSheetMode === 'workout') {
         const val = document.getElementById('sheetTextarea').value.trim();
         if (!val) return;
         const field = c[currentSheetMode];
@@ -1018,6 +1036,30 @@ window.initials = initials;
 window.toggleSingle = toggleSingle;
 window.applySettingsToUI = applySettingsToUI;
 window.uid = uid;
+window.exportClientPDF = async function() {
+  const c = CLIENTS.find(function (x) { return x.id === currentClientId; });
+  if (!c) return;
+  
+  const element = document.getElementById('screen-client-detail');
+  const actionRow = element.querySelector('.profile-action-row');
+  if (actionRow) actionRow.style.display = 'none';
+
+  const opt = {
+    margin:       10,
+    filename:     c.name.replace(/\s+/g, '_') + '_Report.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(element).save();
+  } catch (err) {
+    console.error("PDF Export failed:", err);
+  }
+  
+  if (actionRow) actionRow.style.display = 'flex';
+};
 window.openClientDetail = openClientDetail;
 window.currentSheetMode = currentSheetMode;
 window.CLIENTS = CLIENTS;
