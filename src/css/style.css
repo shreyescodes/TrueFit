@@ -1740,17 +1740,13 @@
       line-height: 1.6;
     }
     .pdf-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
+      display: block;
       border-bottom: 3px solid #111;
       padding-bottom: 15px;
       margin-bottom: 30px;
     }
-    .pdf-header-left h1 { font-size: 26px; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #000; }
-    .pdf-header-left p { font-size: 14px; margin: 4px 0 0; color: #555; }
-    .pdf-header-right { text-align: right; }
-    .pdf-logo { width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px; }
+    .pdf-header h1 { font-size: 26px; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #000; }
+    .pdf-header p { font-size: 14px; margin: 4px 0 0; color: #555; }
     
     .pdf-section-title {
       background: #f4f4f4;

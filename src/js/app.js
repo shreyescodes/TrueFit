@@ -1051,14 +1051,12 @@ window.exportClientPDF = async function() {
   
   const html = '<div class="pdf-report">' +
                '<div class="pdf-header">' +
-               '<div class="pdf-header-left">' +
-               '<img src="./TrueFit.png" alt="TrueFit Logo" class="pdf-logo" />' +
+               '<div>' +
                '<h1>Client Progress Report</h1>' +
                '<p>TrueFit Personal Training</p>' +
                '</div>' +
-               '<div class="pdf-header-right">' +
-               '<p><strong>Date:</strong> ' + today + '</p>' +
-               '<p><strong>Sessions:</strong> ' + c.sessionsLog.length + ' / ' + c.sessionsTotal + '</p>' +
+               '<div style="margin-top: 15px; color: #555;">' +
+               '<strong>Date:</strong> ' + today + ' &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Sessions:</strong> ' + c.sessionsLog.length + ' / ' + c.sessionsTotal +
                '</div>' +
                '</div>' +
                
