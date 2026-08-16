@@ -1045,9 +1045,33 @@ window.exportClientPDF = async function() {
   const c = CLIENTS.find(function (x) { return x.id === currentClientId; });
   if (!c) return;
   
-  const element = document.getElementById('screen-client-detail');
-  const actionRow = element.querySelector('.profile-action-row');
-  if (actionRow) actionRow.style.display = 'none';
+  const container = document.getElementById('pdf-report-container');
+  const today = new Date().toLocaleDateString();
+  const clientNotes = NOTES.filter(function (n) { return n.clientId === c.id; }).sort(function (a, b) { return (a.date < b.date) ? 1 : -1; });
+  
+  const html = '<div class="pdf-report">' +
+               '<div class="pdf-header">' +
+               '<div><h1>Client Progress Report</h1><p style="color:#555; margin:0;">TrueFit Personal Training</p></div>' +
+               '<div class="pdf-meta"><p style="margin:0;"><strong>Date:</strong> ' + today + '</p></div>' +
+               '</div>' +
+               '<h2>Overview</h2>' +
+               '<div class="pdf-grid">' +
+               '<div class="pdf-box"><strong>Name</strong>' + escapeHTML(c.name) + '</div>' +
+               '<div class="pdf-box"><strong>Category</strong>' + escapeHTML(CAT_META[c.category] ? CAT_META[c.category].label : c.category) + '</div>' +
+               '<div class="pdf-box"><strong>Height</strong>' + (c.height || '—') + ' cm</div>' +
+               '<div class="pdf-box"><strong>Weight</strong>' + (c.weight || '—') + ' kg</div>' +
+               '</div>' +
+               '<h2>Plan Summary</h2>' +
+               '<div class="pdf-box" style="margin-bottom:20px;"><strong>Nutrition</strong>' + escapeHTML(c.nutrition.current || 'Not set yet.') + '</div>' +
+               '<div class="pdf-box" style="margin-bottom:20px;"><strong>Workout</strong>' + escapeHTML(c.workout.current || 'Not set yet.') + '</div>' +
+               '<h2>Attendance & Progress</h2>' +
+               '<p>' + c.sessionsLog.length + ' out of ' + c.sessionsTotal + ' sessions attended.</p>' +
+               '<h2>Assessment Notes</h2>' +
+               (clientNotes.length > 0 ? '<ul>' + clientNotes.map(function(n) { return '<li><span class="pdf-history-date">' + fmtDate(n.date) + '</span> ' + escapeHTML(n.text) + '</li>'; }).join('') + '</ul>' : '<p>No notes for this client yet.</p>') +
+               '</div>';
+               
+  container.innerHTML = html;
+  container.style.display = 'block';
 
   const opt = {
     margin:       10,
@@ -1058,12 +1082,13 @@ window.exportClientPDF = async function() {
   };
 
   try {
-    await html2pdf().set(opt).from(element).save();
+    await html2pdf().set(opt).from(container).save();
   } catch (err) {
     console.error("PDF Export failed:", err);
   }
   
-  if (actionRow) actionRow.style.display = 'flex';
+  container.style.display = 'none';
+  container.innerHTML = '';
 };
 window.openClientDetail = openClientDetail;
 window.currentSheetMode = currentSheetMode;
