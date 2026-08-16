@@ -13,6 +13,7 @@ import html2pdf from 'html2pdf.js';
     let currentClientId = null;
     let currentSheetMode = null;
     let currentSheetClientId = null;
+    let currentHistoryIndex = null;
     let pendingStoryImage = null;
     let pendingNoteImage = null;
     let navStack = [];
@@ -561,13 +562,13 @@ import html2pdf from 'html2pdf.js';
         '<div class="card">' +
         '<div class="card-title-row"><p class="card-title">Nutrition</p><button class="edit-icon-btn" onclick="openEditSheet(\'nutrition\')"><i class="fa-solid fa-pen"></i> Edit</button></div>' +
         '<p class="screen-sub">' + escapeHTML(c.nutrition.current || 'Not set yet.') + '</p>' +
-        renderHistoryLog(c.nutrition.history) +
+        renderHistoryLog(c.nutrition.history, 'nutrition') +
         '</div>' +
 
         '<div class="card">' +
         '<div class="card-title-row"><p class="card-title">Workout</p><button class="edit-icon-btn" onclick="openEditSheet(\'workout\')"><i class="fa-solid fa-pen"></i> Edit</button></div>' +
         '<p class="screen-sub">' + escapeHTML(c.workout.current || 'Not set yet.') + '</p>' +
-        renderHistoryLog(c.workout.history) +
+        renderHistoryLog(c.workout.history, 'workout') +
         '</div>' +
 
         '<div class="card-title-row" style="margin-top:22px;"><p class="section-label" style="margin:0;">Notes &amp; Photos</p></div>' +
@@ -577,10 +578,13 @@ import html2pdf from 'html2pdf.js';
       document.getElementById('clientDetailBody').innerHTML = html;
     }
 
-    function renderHistoryLog(history) {
+    function renderHistoryLog(history, category) {
       if (!history || history.length === 0) return '';
-      return '<div class="history-log">' + history.slice(0, 4).map(function (h) {
-        return '<div class="history-entry"><span class="history-date">' + fmtDate(h.date) + '</span><span class="history-text">' + escapeHTML(h.text) + '</span></div>';
+      return '<div class="history-log">' + history.slice(0, 4).map(function (h, i) {
+        return '<div class="history-entry">' +
+               '<div style="flex:1;"><span class="history-date">' + fmtDate(h.date) + '</span><span class="history-text">' + escapeHTML(h.text) + '</span></div>' +
+               (category ? '<button class="icon-btn" style="color:var(--text-faint); margin-left:auto; width:28px; height:28px; background:none; border:none;" onclick="editHistoryLog(\'' + category + '\', ' + i + ')"><i class="fa-solid fa-pen"></i></button>' : '') +
+               '</div>';
       }).join('') + '</div>';
     }
 
@@ -1091,6 +1095,58 @@ window.saveStory = saveStory;
 window.goBack = goBack;
 window.markSession = markSession;
 window.BRAND_HEX = BRAND_HEX;
+window.editHistoryLog = function(category, index) {
+  currentSheetMode = 'history-' + category;
+  currentHistoryIndex = index;
+  const c = CLIENTS.find(function(x) { return x.id === currentClientId; });
+  const entry = c[category].history[index];
+  
+  let html = '<h3>Edit Log</h3>' +
+             '<div class="form-field"><label>Notes</label><textarea id="sheetTextarea" rows="4">' + escapeHTML(entry.text) + '</textarea></div>' +
+             '<div class="sheet-actions" style="display:flex; gap:12px;">' +
+             '<button class="btn-ghost" style="flex:1; border-color:#FF3B30; color:#FF3B30;" onclick="deleteHistoryLog(\'' + category + '\', ' + index + ')">Delete</button>' +
+             '<button class="btn-primary" style="flex:1;" onclick="saveEditHistory()">Save</button>' +
+             '</div>';
+             
+  document.getElementById('sheetBody').innerHTML = html;
+  document.getElementById('sheetOverlay').classList.add('active');
+};
+
+window.deleteHistoryLog = function(category, index) {
+  if (!confirm('Are you sure you want to delete this log entry?')) return;
+  const c = CLIENTS.find(function(x) { return x.id === currentClientId; });
+  c[category].history.splice(index, 1);
+  
+  // If we just deleted the ONLY entry, clear current
+  if (c[category].history.length === 0) {
+    c[category].current = '';
+  } else if (index === 0) {
+    // If we deleted the first entry, promote the next one to current
+    c[category].current = c[category].history[0].text;
+  }
+  
+  window.persist();
+  window.renderClientDetail(currentClientId);
+  window.closeSheet();
+};
+
+window.saveEditHistory = function() {
+  const c = CLIENTS.find(function(x) { return x.id === currentClientId; });
+  const val = document.getElementById('sheetTextarea').value.trim();
+  if(!val) return;
+  
+  const category = currentSheetMode.replace('history-', '');
+  c[category].history[currentHistoryIndex].text = val;
+  
+  if (currentHistoryIndex === 0) {
+    c[category].current = val;
+  }
+  
+  window.persist();
+  window.renderClientDetail(currentClientId);
+  window.closeSheet();
+};
+
 window.syncNow = syncNow;
 window.navStack = navStack;
 window.renderHistoryLog = renderHistoryLog;
