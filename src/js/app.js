@@ -532,10 +532,9 @@ import html2pdf from 'html2pdf.js';
 
       const html = '' +
         '<div class="detail-header">' +
-        '<div style="margin-bottom:15px;"><button class="btn-ghost" style="padding:0; color:var(--text-faint);" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button></div>' +
-        '<div class="client-detail-top"><div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
-        '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge">' + meta.label + '</span></div>' +
-        '</div>' +
+        '<button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></button>' +
+        '<div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
+        '<div><h2 style="margin:0;">' + escapeHTML(c.name) + '</h2><span class="badge" style="margin-top:6px; display:inline-block;">' + meta.label + '</span></div>' +
         '</div>' +
         '<div class="profile-action-row" style="display:flex; gap:12px; margin-bottom: 24px;">' +
         '<button class="btn-ghost" style="flex:1; padding: 12px 10px; font-size: 13px;" onclick="openEditSheet(\'profile\')"><i class="fa-solid fa-pen"></i> Edit Profile</button>' +
