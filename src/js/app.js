@@ -532,6 +532,7 @@ import html2pdf from 'html2pdf.js';
 
       const html = '' +
         '<div class="detail-header">' +
+        '<div style="margin-bottom:15px;"><button class="btn-ghost" style="padding:0; color:var(--text-faint);" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Back</button></div>' +
         '<div class="client-detail-top"><div class="avatar">' + escapeHTML(initials(c.name)) + '</div>' +
         '<div class="client-detail-title"><h2>' + escapeHTML(c.name) + '</h2><span class="badge">' + meta.label + '</span></div>' +
         '</div>' +
