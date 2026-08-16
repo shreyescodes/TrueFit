@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-
+import html2pdf from 'html2pdf.js';
     let NOTIFICATIONS = [];
     let CLIENTS = [];
     let NOTES = [];
