@@ -1051,23 +1051,39 @@ window.exportClientPDF = async function() {
   
   const html = '<div class="pdf-report">' +
                '<div class="pdf-header">' +
-               '<div><h1>Client Progress Report</h1><p style="color:#555; margin:0;">TrueFit Personal Training</p></div>' +
-               '<div class="pdf-meta"><p style="margin:0;"><strong>Date:</strong> ' + today + '</p></div>' +
+               '<div class="pdf-header-left">' +
+               '<img src="./TrueFit.png" alt="TrueFit Logo" class="pdf-logo" />' +
+               '<h1>Client Progress Report</h1>' +
+               '<p>TrueFit Personal Training</p>' +
                '</div>' +
-               '<h2>Overview</h2>' +
-               '<div class="pdf-grid">' +
-               '<div class="pdf-box"><strong>Name</strong>' + escapeHTML(c.name) + '</div>' +
-               '<div class="pdf-box"><strong>Category</strong>' + escapeHTML(CAT_META[c.category] ? CAT_META[c.category].label : c.category) + '</div>' +
-               '<div class="pdf-box"><strong>Height</strong>' + (c.height || '—') + ' cm</div>' +
-               '<div class="pdf-box"><strong>Weight</strong>' + (c.weight || '—') + ' kg</div>' +
+               '<div class="pdf-header-right">' +
+               '<p><strong>Date:</strong> ' + today + '</p>' +
+               '<p><strong>Sessions:</strong> ' + c.sessionsLog.length + ' / ' + c.sessionsTotal + '</p>' +
                '</div>' +
-               '<h2>Plan Summary</h2>' +
-               '<div class="pdf-box" style="margin-bottom:20px;"><strong>Nutrition</strong>' + escapeHTML(c.nutrition.current || 'Not set yet.') + '</div>' +
-               '<div class="pdf-box" style="margin-bottom:20px;"><strong>Workout</strong>' + escapeHTML(c.workout.current || 'Not set yet.') + '</div>' +
-               '<h2>Attendance & Progress</h2>' +
-               '<p>' + c.sessionsLog.length + ' out of ' + c.sessionsTotal + ' sessions attended.</p>' +
-               '<h2>Assessment Notes</h2>' +
-               (clientNotes.length > 0 ? '<ul>' + clientNotes.map(function(n) { return '<li><span class="pdf-history-date">' + fmtDate(n.date) + '</span> ' + escapeHTML(n.text) + '</li>'; }).join('') + '</ul>' : '<p>No notes for this client yet.</p>') +
+               '</div>' +
+               
+               '<div class="pdf-section-title">Client Overview</div>' +
+               '<table class="pdf-table">' +
+               '<tr><th>Name</th><td>' + escapeHTML(c.name) + '</td></tr>' +
+               '<tr><th>Category</th><td>' + escapeHTML(CAT_META[c.category] ? CAT_META[c.category].label : c.category) + '</td></tr>' +
+               '<tr><th>Height / Weight</th><td>' + (c.height || '—') + ' cm / ' + (c.weight || '—') + ' kg</td></tr>' +
+               '</table>' +
+               
+               '<div class="pdf-section-title">Active Protocols</div>' +
+               '<table class="pdf-table">' +
+               '<tr><th>Nutrition Protocol</th><td>' + escapeHTML(c.nutrition.current || 'Not set yet.') + '</td></tr>' +
+               '<tr><th>Training Protocol</th><td>' + escapeHTML(c.workout.current || 'Not set yet.') + '</td></tr>' +
+               '</table>' +
+               
+               '<div class="pdf-section-title">Assessment History Ledger</div>' +
+               (clientNotes.length > 0 
+                 ? '<table class="pdf-table pdf-table-history">' +
+                   '<tr><th>Date</th><th>Assessment Notes</th></tr>' +
+                   clientNotes.map(function(n) { 
+                     return '<tr><td>' + fmtDate(n.date) + '</td><td>' + escapeHTML(n.text) + '</td></tr>'; 
+                   }).join('') +
+                   '</table>' 
+                 : '<div class="pdf-text-block">No assessment notes recorded for this client.</div>') +
                '</div>';
                
   container.innerHTML = html;
