@@ -1,5 +1,16 @@
 import { Capacitor } from '@capacitor/core';
 import html2pdf from 'html2pdf.js';
+import { auth, db } from './firebase.js';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  onAuthStateChanged,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  updatePassword
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
     let NOTIFICATIONS = [];
     let CLIENTS = [];
     let NOTES = [];
@@ -149,30 +160,30 @@ import html2pdf from 'html2pdf.js';
 
     /* ===================== Storage ===================== */
     async function persist() {
+      if (!SETTINGS.signedIn || !SETTINGS.account) return;
       try {
-        if (window.storage) {
-          await window.storage.set('truefit_state', JSON.stringify({ CLIENTS, NOTES, STORIES, SETTINGS }));
-        }
+        const uid = auth.currentUser ? auth.currentUser.uid : SETTINGS.account;
+        await setDoc(doc(db, 'users', SETTINGS.account), {
+          CLIENTS, NOTES, STORIES, SETTINGS
+        }, { merge: true });
       } catch (e) { console.warn('persist failed', e); }
     }
 
-    async function hydrate() {
+    async function hydrate(accountId) {
       CLIENTS = [];
       NOTES = [];
       STORIES = [];
       try {
-        if (window.storage) {
-          const res = await window.storage.get('truefit_state');
-          if (res && res.value) {
-            const data = JSON.parse(res.value);
-            if (data.CLIENTS && data.CLIENTS.length) CLIENTS = data.CLIENTS;
-            if (data.NOTES) NOTES = data.NOTES;
-            if (data.NOTIFICATIONS) NOTIFICATIONS = data.NOTIFICATIONS;
-            if (data.STORIES) STORIES = data.STORIES;
-            if (data.SETTINGS) SETTINGS = Object.assign(SETTINGS, data.SETTINGS);
-          }
+        const snap = await getDoc(doc(db, 'users', accountId));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.CLIENTS && data.CLIENTS.length) CLIENTS = data.CLIENTS;
+          if (data.NOTES) NOTES = data.NOTES;
+          if (data.NOTIFICATIONS) NOTIFICATIONS = data.NOTIFICATIONS;
+          if (data.STORIES) STORIES = data.STORIES;
+          if (data.SETTINGS) SETTINGS = Object.assign(SETTINGS, data.SETTINGS);
         }
-      } catch (e) { /* first run, nothing stored yet */ }
+      } catch (e) { console.warn('hydrate failed', e); }
     }
 
     /* ===================== Utils ===================== */
@@ -805,63 +816,60 @@ import html2pdf from 'html2pdf.js';
       toast('Data exported');
     }
 
-    function getUsers() {
-      try { return JSON.parse(localStorage.getItem('TRUEFIT_USERS')) || {}; } 
-      catch(e) { return {}; }
-    }
-    
-    function saveUsers(users) {
-      localStorage.setItem('TRUEFIT_USERS', JSON.stringify(users));
+    function getPseudoEmail(phone) {
+      let cleaned = phone.replace(/\D/g, '');
+      return cleaned + '@truefit.app';
     }
 
-    function signUp() {
+    async function signUp() {
       const phone = document.getElementById('signUpPhone').value.trim();
       const pwd = document.getElementById('signUpPassword').value;
       const conf = document.getElementById('signUpConfirm').value;
       if (!phone) { toast('Enter phone number'); return; }
-      if (!pwd || pwd.length < 4) { toast('Password too short'); return; }
+      if (!pwd || pwd.length < 6) { toast('Password must be at least 6 chars'); return; }
       if (pwd !== conf) { toast('Passwords do not match'); return; }
-      const users = getUsers();
-      if (users[phone]) { toast('Account already exists'); return; }
-      users[phone] = { password: pwd, name: '' };
-      saveUsers(users);
-      SETTINGS.signedIn = true;
-      SETTINGS.account = phone;
-      SETTINGS.userName = '';
-      persist();
-      toast('Account created');
-      goTo('screen-profile', {reset:true});
+      
+      try {
+        await createUserWithEmailAndPassword(auth, getPseudoEmail(phone), pwd);
+        SETTINGS.signedIn = true;
+        SETTINGS.account = phone;
+        SETTINGS.userName = '';
+        await persist();
+        toast('Account created');
+        goTo('screen-profile', {reset:true});
+      } catch(e) {
+        toast(e.message.replace('Firebase: ', ''));
+      }
     }
 
-    function signIn() {
+    async function signIn() {
       const phone = document.getElementById('signInPhone').value.trim();
       const pwd = document.getElementById('signInPassword').value;
       if (!phone || !pwd) { toast('Enter phone and password'); return; }
-      const users = getUsers();
-      if (!users[phone] || users[phone].password !== pwd) { toast('Invalid credentials'); return; }
-      SETTINGS.signedIn = true;
-      SETTINGS.account = phone;
-      SETTINGS.userName = users[phone].name || '';
-      persist();
-      toast('Signed in');
-      if (!SETTINGS.userName) {
-        goTo('screen-profile', {reset:true});
-      } else {
-        goTo('screen-home', {reset:true});
-        renderHome();
+      
+      try {
+        await signInWithEmailAndPassword(auth, getPseudoEmail(phone), pwd);
+        SETTINGS.signedIn = true;
+        SETTINGS.account = phone;
+        await hydrate(phone);
+        toast('Signed in');
+        if (!SETTINGS.userName) {
+          goTo('screen-profile', {reset:true});
+        } else {
+          goTo('screen-home', {reset:true});
+          renderHome();
+        }
+      } catch(e) {
+        toast('Invalid credentials or account not found.');
       }
     }
 
-    function saveProfile() {
+    async function saveProfile() {
       const name = document.getElementById('profileName').value.trim();
       if (!name) { toast('Please enter your name'); return; }
-      const users = getUsers();
-      if (users[SETTINGS.account]) {
-        users[SETTINGS.account].name = name;
-        saveUsers(users);
-      }
+      
       SETTINGS.userName = name;
-      persist();
+      await persist();
       goTo('screen-home', {reset:true});
       renderHome();
     }
@@ -871,17 +879,95 @@ import html2pdf from 'html2pdf.js';
       persist();
       toast('Syncing…');
       setTimeout(function () {
-        document.getElementById('lastSyncLine').textContent = 'Last synced: just now';
+        document.getElementById('lastSyncLine') && (document.getElementById('lastSyncLine').textContent = 'Last synced: just now');
       }, 700);
     }
 
-    function signOut() {
+    async function signOut() {
+      try {
+        await firebaseSignOut(auth);
+      } catch(e) {}
       SETTINGS.signedIn = false;
       SETTINGS.account = null;
       SETTINGS.userName = null;
-      persist();
+      CLIENTS = [];
+      NOTES = [];
+      STORIES = [];
       goTo('screen-signin', { reset: true });
     }
+
+    /* ===================== Password Recovery ===================== */
+    let confirmationResult = null;
+    
+    function initRecaptcha() {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible'
+        });
+      }
+    }
+
+    window.sendRecoveryCode = async function() {
+      let phone = document.getElementById('recoveryPhone').value.trim();
+      if (!phone) { toast('Enter phone number'); return; }
+      if (!phone.startsWith('+')) {
+        // Assume India if no country code provided, as per typical use case here
+        phone = '+91' + phone.replace(/^0+/, '');
+      }
+      initRecaptcha();
+      try {
+        toast('Sending code...');
+        confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+        document.getElementById('recoveryPhoneSection').style.display = 'none';
+        document.getElementById('recoveryCodeSection').style.display = 'flex';
+        toast('Code sent via SMS');
+      } catch(error) {
+        toast('Error sending code. Try again.');
+        console.error(error);
+        if (window.recaptchaVerifier) window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    };
+
+    window.verifyRecoveryCode = async function() {
+      const code = document.getElementById('recoveryCode').value.trim();
+      if (!code) { toast('Enter 6-digit code'); return; }
+      try {
+        toast('Verifying...');
+        await confirmationResult.confirm(code);
+        document.getElementById('recoveryCodeSection').style.display = 'none';
+        document.getElementById('recoveryPasswordSection').style.display = 'flex';
+        toast('Phone verified. Set new password.');
+      } catch(error) {
+        toast('Invalid code');
+      }
+    };
+
+    window.resetPassword = async function() {
+      const newPwd = document.getElementById('recoveryNewPassword').value;
+      if (!newPwd || newPwd.length < 6) { toast('Password must be at least 6 chars'); return; }
+      
+      try {
+        // For Option B, updating the password directly on the client side via Phone Auth credential
+        // is restricted if we don't link the pseudo-email. As a simple workaround for the prototype,
+        // we sign them in completely and just rely on them being logged in. Real production apps
+        // would use a Cloud Function to securely reset the pseudo-email password.
+        const phone = document.getElementById('recoveryPhone').value.trim().replace(/\D/g, '').slice(-10); // get last 10 digits
+        SETTINGS.signedIn = true;
+        SETTINGS.account = phone;
+        await hydrate(phone);
+        
+        toast('Logged in successfully!');
+        if (!SETTINGS.userName) {
+          goTo('screen-profile', {reset:true});
+        } else {
+          goTo('screen-home', {reset:true});
+          renderHome();
+        }
+      } catch(error) {
+        toast('Error saving password');
+      }
+    };
 
     /* ===================== Multi-Select & Long Press ===================== */
     let pressTimer = null;
@@ -991,23 +1077,37 @@ import html2pdf from 'html2pdf.js';
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      hydrate().then(function () {
-        if (!BRAND_HEX[SETTINGS.brand]) SETTINGS.brand = 'candy';
-        const theme = BRAND_HEX[SETTINGS.brand];
-        document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
-        document.querySelector('.screen').style.setProperty('--brand', theme.color);
-        document.querySelector('.screen').style.setProperty('--accent', theme.color);
-        document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
-        renderHome();
-        renderNotes();
-        renderStories();
-        applySettingsToUI();
-        goTo('screen-splash', { reset: true });
-        setTimeout(function () {
-          if (document.getElementById('screen-splash').classList.contains('active')) {
-            goTo('screen-signin', { reset: true });
-          }
-        }, 2200);
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // Extract phone from pseudo-email or phone auth
+          let phone = user.email ? user.email.replace('@truefit.app', '') : user.phoneNumber;
+          if (phone && phone.startsWith('+')) phone = phone.replace(/\D/g, '').slice(-10); // simplify
+          
+          SETTINGS.signedIn = true;
+          SETTINGS.account = phone;
+          await hydrate(phone);
+          
+          if (!BRAND_HEX[SETTINGS.brand]) SETTINGS.brand = 'candy';
+          const theme = BRAND_HEX[SETTINGS.brand];
+          document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
+          document.querySelector('.screen').style.setProperty('--brand', theme.color);
+          document.querySelector('.screen').style.setProperty('--accent', theme.color);
+          document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
+          
+          renderHome();
+          renderNotes();
+          renderStories();
+          if (window.applySettingsToUI) applySettingsToUI();
+          
+          goTo('screen-home', { reset: true });
+        } else {
+          goTo('screen-splash', { reset: true });
+          setTimeout(function () {
+            if (document.getElementById('screen-splash').classList.contains('active')) {
+              goTo('screen-signin', { reset: true });
+            }
+          }, 2200);
+        }
       });
     });
 

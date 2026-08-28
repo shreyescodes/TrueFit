@@ -55,7 +55,10 @@
               <input type="password" id="signInPassword" placeholder="Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
               <button class="btn-primary full" onclick="signIn()">Sign In</button>
             </div>
-            <p class="signin-skip" onclick="goTo('screen-signup', {reset:true})">Don't have an account? <strong>Sign Up</strong></p>
+            <div style="margin-top: 16px; text-align: center;">
+              <p class="signin-skip" onclick="goTo('screen-recovery', {reset:true})" style="margin-bottom: 12px; opacity: 0.8;">Forgot Password?</p>
+              <p class="signin-skip" onclick="goTo('screen-signup', {reset:true})">Don't have an account? <strong>Sign Up</strong></p>
+            </div>
           </section>
 
           <!-- SIGN UP -->
@@ -70,6 +73,31 @@
               <button class="btn-primary full" onclick="signUp()">Sign Up</button>
             </div>
             <p class="signin-skip" onclick="goTo('screen-signin', {reset:true})">Already have an account? <strong>Sign In</strong></p>
+          </section>
+
+          <!-- RECOVERY -->
+          <section class="app-screen" id="screen-recovery">
+            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <h2 class="signin-word">Recover Account</h2>
+            <p class="signin-sub">Enter your phone number to receive a 6-digit code.</p>
+            
+            <div id="recoveryPhoneSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="tel" id="recoveryPhone" placeholder="Phone Number" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <div id="recaptcha-container"></div>
+              <button class="btn-primary full" id="sendRecoveryCodeBtn" onclick="sendRecoveryCode()">Send Code</button>
+            </div>
+
+            <div id="recoveryCodeSection" style="display:none; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="text" id="recoveryCode" placeholder="6-digit Code" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" id="verifyRecoveryCodeBtn" onclick="verifyRecoveryCode()">Verify Code</button>
+            </div>
+
+            <div id="recoveryPasswordSection" style="display:none; flex-direction:column; gap:12px; margin-top:24px;">
+              <input type="password" id="recoveryNewPassword" placeholder="New Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" id="resetPasswordBtn" onclick="resetPassword()">Reset Password</button>
+            </div>
+
+            <p class="signin-skip" onclick="goTo('screen-signin', {reset:true})" style="margin-top: 16px;">Back to <strong>Sign In</strong></p>
           </section>
 
           <!-- PROFILE SETUP -->
