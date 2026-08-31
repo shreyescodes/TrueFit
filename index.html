@@ -22,7 +22,7 @@
           <!-- SPLASH -->
           <section class="app-screen" id="screen-splash"
             onclick="goTo(SETTINGS.signedIn ? 'screen-home' : 'screen-signin', {reset:true})">
-            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <img src="./Dumbbell.png" alt="True Fit Logo" class="app-logo" />
             <h1 class="splash-word">True Fit</h1>
             <p class="splash-tag">Fuel Your Ambition</p>
             <div class="calib splash-calib">
@@ -47,7 +47,7 @@
 
           <!-- SIGN IN -->
           <section class="app-screen" id="screen-signin">
-            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <img src="./Dumbbell.png" alt="True Fit Logo" class="app-logo" />
             <h2 class="signin-word">True Fit</h2>
             <p class="signin-sub">Sign in to manage your clients, sessions, and progress notes in one place.</p>
             <div id="signInSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
@@ -63,13 +63,20 @@
 
           <!-- SIGN UP -->
           <section class="app-screen" id="screen-signup">
-            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <img src="./Dumbbell.png" alt="True Fit Logo" class="app-logo" />
             <h2 class="signin-word">Create Account</h2>
             <p class="signin-sub">Join True Fit to build your personalized training ecosystem.</p>
             <div id="signUpSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
               <input type="tel" id="signUpPhone" placeholder="Phone Number" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
               <input type="password" id="signUpPassword" placeholder="Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
               <input type="password" id="signUpConfirm" placeholder="Confirm Password" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <select id="signUpQuestion" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;">
+                <option value="" disabled selected>Select a Security Question</option>
+                <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                <option value="What was the name of your first school?">What was the name of your first school?</option>
+                <option value="In what city were you born?">In what city were you born?</option>
+              </select>
+              <input type="text" id="signUpAnswer" placeholder="Security Answer" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
               <button class="btn-primary full" onclick="signUp()">Sign Up</button>
             </div>
             <p class="signin-skip" onclick="goTo('screen-signin', {reset:true})">Already have an account? <strong>Sign In</strong></p>
@@ -77,19 +84,19 @@
 
           <!-- RECOVERY -->
           <section class="app-screen" id="screen-recovery">
-            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <img src="./Dumbbell.png" alt="True Fit Logo" class="app-logo" />
             <h2 class="signin-word">Recover Account</h2>
-            <p class="signin-sub">Enter your phone number to receive a 6-digit code.</p>
+            <p class="signin-sub">Answer your security question to reset your password.</p>
             
             <div id="recoveryPhoneSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
               <input type="tel" id="recoveryPhone" placeholder="Phone Number" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
-              <div id="recaptcha-container"></div>
-              <button class="btn-primary full" id="sendRecoveryCodeBtn" onclick="sendRecoveryCode()">Send Code</button>
+              <button class="btn-primary full" id="checkPhoneBtn" onclick="checkRecoveryPhone()">Continue</button>
             </div>
 
-            <div id="recoveryCodeSection" style="display:none; flex-direction:column; gap:12px; margin-top:24px;">
-              <input type="text" id="recoveryCode" placeholder="6-digit Code" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
-              <button class="btn-primary full" id="verifyRecoveryCodeBtn" onclick="verifyRecoveryCode()">Verify Code</button>
+            <div id="recoveryQuestionSection" style="display:none; flex-direction:column; gap:12px; margin-top:24px;">
+              <p id="recoveryQuestionText" style="font-size:16px; font-weight:600; text-align:center; margin-bottom:8px;"></p>
+              <input type="text" id="recoveryAnswer" placeholder="Security Answer" style="width:100%; padding:14px; border-radius:var(--r-md); border:1px solid var(--line-strong); background:var(--panel); color:var(--text); font-size:16px;" />
+              <button class="btn-primary full" id="verifyAnswerBtn" onclick="verifySecurityAnswer()">Verify Answer</button>
             </div>
 
             <div id="recoveryPasswordSection" style="display:none; flex-direction:column; gap:12px; margin-top:24px;">
@@ -102,7 +109,7 @@
 
           <!-- PROFILE SETUP -->
           <section class="app-screen" id="screen-profile">
-            <img src="./TrueFit.png" alt="True Fit Logo" class="app-logo" />
+            <img src="./Dumbbell.png" alt="True Fit Logo" class="app-logo" />
             <h2 class="signin-word">Welcome Aboard</h2>
             <p class="signin-sub">Let's start by getting to know you. What is your name?</p>
             <div id="profileSection" style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">

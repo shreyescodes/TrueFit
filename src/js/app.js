@@ -1,15 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import html2pdf from 'html2pdf.js';
-import { auth, db } from './firebase.js';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut, 
-  onAuthStateChanged,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  updatePassword
-} from 'firebase/auth';
+import { db } from './firebase.js';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
     let NOTIFICATIONS = [];
     let CLIENTS = [];
@@ -162,7 +153,6 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
     async function persist() {
       if (!SETTINGS.signedIn || !SETTINGS.account) return;
       try {
-        const uid = auth.currentUser ? auth.currentUser.uid : SETTINGS.account;
         await setDoc(doc(db, 'users', SETTINGS.account), {
           CLIENTS, NOTES, STORIES, SETTINGS
         }, { merge: true });
@@ -816,39 +806,56 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       toast('Data exported');
     }
 
-    function getPseudoEmail(phone) {
-      let cleaned = phone.replace(/\D/g, '');
-      return cleaned + '@truefit.app';
-    }
-
-    async function signUp() {
+    window.signUp = async function() {
       const phone = document.getElementById('signUpPhone').value.trim();
       const pwd = document.getElementById('signUpPassword').value;
       const conf = document.getElementById('signUpConfirm').value;
+      const question = document.getElementById('signUpQuestion').value;
+      const answer = document.getElementById('signUpAnswer').value.trim();
+      
       if (!phone) { toast('Enter phone number'); return; }
       if (!pwd || pwd.length < 6) { toast('Password must be at least 6 chars'); return; }
       if (pwd !== conf) { toast('Passwords do not match'); return; }
+      if (!question || !answer) { toast('Please complete the security question'); return; }
       
       try {
-        await createUserWithEmailAndPassword(auth, getPseudoEmail(phone), pwd);
+        const userRef = doc(db, 'users', phone);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          toast('Account already exists for this number');
+          return;
+        }
+        
         SETTINGS.signedIn = true;
         SETTINGS.account = phone;
         SETTINGS.userName = '';
-        await persist();
+        
+        await setDoc(userRef, {
+          password: pwd,
+          securityQuestion: question,
+          securityAnswer: answer.toLowerCase(),
+          CLIENTS: [], NOTES: [], STORIES: [], SETTINGS: SETTINGS
+        });
+        
         toast('Account created');
         goTo('screen-profile', {reset:true});
       } catch(e) {
-        toast(e.message.replace('Firebase: ', ''));
+        toast('Error creating account');
       }
-    }
+    };
 
-    async function signIn() {
+    window.signIn = async function() {
       const phone = document.getElementById('signInPhone').value.trim();
       const pwd = document.getElementById('signInPassword').value;
       if (!phone || !pwd) { toast('Enter phone and password'); return; }
       
       try {
-        await signInWithEmailAndPassword(auth, getPseudoEmail(phone), pwd);
+        const userSnap = await getDoc(doc(db, 'users', phone));
+        if (!userSnap.exists() || userSnap.data().password !== pwd) {
+          toast('Invalid credentials or account not found.');
+          return;
+        }
+        
         SETTINGS.signedIn = true;
         SETTINGS.account = phone;
         await hydrate(phone);
@@ -860,9 +867,9 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
           renderHome();
         }
       } catch(e) {
-        toast('Invalid credentials or account not found.');
+        toast('Error signing in');
       }
-    }
+    };
 
     async function saveProfile() {
       const name = document.getElementById('profileName').value.trim();
@@ -883,10 +890,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       }, 700);
     }
 
-    async function signOut() {
-      try {
-        await firebaseSignOut(auth);
-      } catch(e) {}
+    window.signOut = async function() {
       SETTINGS.signedIn = false;
       SETTINGS.account = null;
       SETTINGS.userName = null;
@@ -894,52 +898,57 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       NOTES = [];
       STORIES = [];
       goTo('screen-signin', { reset: true });
-    }
+    };
 
     /* ===================== Password Recovery ===================== */
-    let confirmationResult = null;
+    let recoveryUserPhone = null;
     
-    function initRecaptcha() {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible'
-        });
-      }
-    }
-
-    window.sendRecoveryCode = async function() {
+    window.checkRecoveryPhone = async function() {
       let phone = document.getElementById('recoveryPhone').value.trim();
       if (!phone) { toast('Enter phone number'); return; }
-      if (!phone.startsWith('+')) {
-        // Assume India if no country code provided, as per typical use case here
-        phone = '+91' + phone.replace(/^0+/, '');
-      }
-      initRecaptcha();
+      
       try {
-        toast('Sending code...');
-        confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+        toast('Checking account...');
+        const userSnap = await getDoc(doc(db, 'users', phone));
+        if (!userSnap.exists()) {
+          toast('Account not found');
+          return;
+        }
+        
+        const data = userSnap.data();
+        if (!data.securityQuestion) {
+          toast('No security question set for this account');
+          return;
+        }
+        
+        recoveryUserPhone = phone;
+        document.getElementById('recoveryQuestionText').textContent = data.securityQuestion;
         document.getElementById('recoveryPhoneSection').style.display = 'none';
-        document.getElementById('recoveryCodeSection').style.display = 'flex';
-        toast('Code sent via SMS');
+        document.getElementById('recoveryQuestionSection').style.display = 'flex';
       } catch(error) {
-        toast('Error sending code. Try again.');
-        console.error(error);
-        if (window.recaptchaVerifier) window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
+        toast('Error checking account');
       }
     };
 
-    window.verifyRecoveryCode = async function() {
-      const code = document.getElementById('recoveryCode').value.trim();
-      if (!code) { toast('Enter 6-digit code'); return; }
+    window.verifySecurityAnswer = async function() {
+      const answer = document.getElementById('recoveryAnswer').value.trim().toLowerCase();
+      if (!answer) { toast('Enter your answer'); return; }
+      
       try {
         toast('Verifying...');
-        await confirmationResult.confirm(code);
-        document.getElementById('recoveryCodeSection').style.display = 'none';
+        const userSnap = await getDoc(doc(db, 'users', recoveryUserPhone));
+        const data = userSnap.data();
+        
+        if (data.securityAnswer !== answer) {
+          toast('Incorrect answer');
+          return;
+        }
+        
+        document.getElementById('recoveryQuestionSection').style.display = 'none';
         document.getElementById('recoveryPasswordSection').style.display = 'flex';
-        toast('Phone verified. Set new password.');
+        toast('Verified. Set new password.');
       } catch(error) {
-        toast('Invalid code');
+        toast('Error verifying answer');
       }
     };
 
@@ -948,16 +957,13 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       if (!newPwd || newPwd.length < 6) { toast('Password must be at least 6 chars'); return; }
       
       try {
-        // For Option B, updating the password directly on the client side via Phone Auth credential
-        // is restricted if we don't link the pseudo-email. As a simple workaround for the prototype,
-        // we sign them in completely and just rely on them being logged in. Real production apps
-        // would use a Cloud Function to securely reset the pseudo-email password.
-        const phone = document.getElementById('recoveryPhone').value.trim().replace(/\D/g, '').slice(-10); // get last 10 digits
-        SETTINGS.signedIn = true;
-        SETTINGS.account = phone;
-        await hydrate(phone);
+        await setDoc(doc(db, 'users', recoveryUserPhone), { password: newPwd }, { merge: true });
         
-        toast('Logged in successfully!');
+        SETTINGS.signedIn = true;
+        SETTINGS.account = recoveryUserPhone;
+        await hydrate(recoveryUserPhone);
+        
+        toast('Password reset successfully!');
         if (!SETTINGS.userName) {
           goTo('screen-profile', {reset:true});
         } else {
