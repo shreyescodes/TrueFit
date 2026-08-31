@@ -829,6 +829,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
         SETTINGS.signedIn = true;
         SETTINGS.account = phone;
         SETTINGS.userName = '';
+        localStorage.setItem('truefit_account', phone);
         
         await setDoc(userRef, {
           password: pwd,
@@ -858,6 +859,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
         
         SETTINGS.signedIn = true;
         SETTINGS.account = phone;
+        localStorage.setItem('truefit_account', phone);
         await hydrate(phone);
         toast('Signed in');
         if (!SETTINGS.userName) {
@@ -894,6 +896,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       SETTINGS.signedIn = false;
       SETTINGS.account = null;
       SETTINGS.userName = null;
+      localStorage.removeItem('truefit_account');
       CLIENTS = [];
       NOTES = [];
       STORIES = [];
@@ -961,6 +964,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
         
         SETTINGS.signedIn = true;
         SETTINGS.account = recoveryUserPhone;
+        localStorage.setItem('truefit_account', recoveryUserPhone);
         await hydrate(recoveryUserPhone);
         
         toast('Password reset successfully!');
@@ -1082,39 +1086,34 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
       document.getElementById('sheetOverlay').classList.add('active');
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          // Extract phone from pseudo-email or phone auth
-          let phone = user.email ? user.email.replace('@truefit.app', '') : user.phoneNumber;
-          if (phone && phone.startsWith('+')) phone = phone.replace(/\D/g, '').slice(-10); // simplify
-          
-          SETTINGS.signedIn = true;
-          SETTINGS.account = phone;
-          await hydrate(phone);
-          
-          if (!BRAND_HEX[SETTINGS.brand]) SETTINGS.brand = 'candy';
-          const theme = BRAND_HEX[SETTINGS.brand];
-          document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
-          document.querySelector('.screen').style.setProperty('--brand', theme.color);
-          document.querySelector('.screen').style.setProperty('--accent', theme.color);
-          document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
-          
-          renderHome();
-          renderNotes();
-          renderStories();
-          if (window.applySettingsToUI) applySettingsToUI();
-          
-          goTo('screen-home', { reset: true });
-        } else {
-          goTo('screen-splash', { reset: true });
-          setTimeout(function () {
-            if (document.getElementById('screen-splash').classList.contains('active')) {
-              goTo('screen-signin', { reset: true });
-            }
-          }, 2200);
-        }
-      });
+    document.addEventListener('DOMContentLoaded', async function () {
+      const savedPhone = localStorage.getItem('truefit_account');
+      if (savedPhone) {
+        SETTINGS.signedIn = true;
+        SETTINGS.account = savedPhone;
+        await hydrate(savedPhone);
+        
+        if (!BRAND_HEX[SETTINGS.brand]) SETTINGS.brand = 'candy';
+        const theme = BRAND_HEX[SETTINGS.brand];
+        document.querySelector('.screen').setAttribute('data-theme', SETTINGS.theme);
+        document.querySelector('.screen').style.setProperty('--brand', theme.color);
+        document.querySelector('.screen').style.setProperty('--accent', theme.color);
+        document.querySelector('.screen').style.setProperty('--accent-gradient', theme.gradient);
+        
+        renderHome();
+        renderNotes();
+        renderStories();
+        if (window.applySettingsToUI) applySettingsToUI();
+        
+        goTo('screen-home', { reset: true });
+      } else {
+        goTo('screen-splash', { reset: true });
+        setTimeout(function () {
+          if (document.getElementById('screen-splash').classList.contains('active')) {
+            goTo('screen-signin', { reset: true });
+          }
+        }, 2200);
+      }
     });
 
 /* ===================== Window Exports ===================== */
