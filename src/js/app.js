@@ -841,7 +841,8 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
         toast('Account created');
         goTo('screen-profile', {reset:true});
       } catch(e) {
-        toast('Error creating account');
+        console.error("Sign Up Error:", e);
+        toast('Error creating account: ' + e.message);
       }
     };
 
